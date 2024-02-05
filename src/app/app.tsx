@@ -1,14 +1,22 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import styles from './app.module.scss';
+import React from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import NxWelcome from './nx-welcome';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { MainLayout } from '@/components/layout';
+import Home from '@/pages/Home';
+import NotFound from '@/pages/NotFound';
 
-export function App() {
-  return (
-    <div>
-      <NxWelcome title="near-multichain-demo" />
-    </div>
-  );
-}
+const App: React.FC = () => (
+  <BrowserRouter>
+    <ErrorBoundary>
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />}></Route>
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </ErrorBoundary>
+  </BrowserRouter>
+);
 
 export default App;

@@ -1,0 +1,27 @@
+import { Box, Flex } from '@chakra-ui/react';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+
+import NavBar from './NavBar';
+
+const Layout = () => (
+  <Flex
+    h={{ base: '100%', lg: '844px' }}
+    w={{ base: '100%', lg: '390px' }}
+    flexDir="column"
+    mx="auto"
+    p="0px 20px"
+    gap="40px"
+    align="center"
+    bg="--Sand-Light-2"
+  >
+    <Flex h="full" w="full" flexDir="column">
+      <NavBar />
+      <Box boxSizing="border-box" w="full" bg="white">
+        <Outlet />
+      </Box>
+    </Flex>
+  </Flex>
+);
+
+export default Layout;
