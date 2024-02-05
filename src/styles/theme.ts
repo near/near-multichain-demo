@@ -33,6 +33,7 @@ const styles = {
 const colors = {
   '--Sand-Light-1': '#FDFDFC',
   '--Sand-Light-2': '#F9F9F8',
+  '--Sand-Light-4': '#EEEEEC',
   '--Sand-Light-6': '#E3E3E0',
   '--Sand-Light-11': '#706F6C',
   '--Sand-Light-12': '#1B1B18',
