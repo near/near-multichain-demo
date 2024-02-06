@@ -9,15 +9,15 @@ const NotFoundPage: React.FC = () => (
       p={8}
       borderWidth="1px"
       borderRadius="lg"
-      boxShadow="lg"
+      boxShadow="md"
     >
-      <Heading size="xl" mb={4} color="red.500">
+      <Heading size="lg" mb={4} color="--Red-Light-8">
         404 - Page Not Found
       </Heading>
       <Text fontSize="lg" mb={6}>
         Oops! It seems like the page you are looking for does not exist.
       </Text>
-      <Button as={Link} to="/" colorScheme="teal" size="lg">
+      <Button as={Link} to="/" colorScheme="gray" size="lg">
         Go Home
       </Button>
     </Box>

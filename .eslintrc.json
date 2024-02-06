@@ -33,7 +33,6 @@
             "ObjectExpression":   "first"
           }
         ],
-        "semi":                                  ["error", "always"],
         "comma-dangle":                        ["error", "only-multiline"],
         "max-len":                             [
           "error", 120, {
@@ -57,7 +56,6 @@
         "no-console":                          "off",
         "func-names":                          "off",
         "no-param-reassign":                   "off",
-        "arrow-body-style":                    ["error", "as-needed", { "requireReturnForObjectLiteral": true }],
         "no-underscore-dangle":                "off",
         "import/extensions":    ["error",
           { "json": "always", "svg": "always" }
@@ -79,15 +77,15 @@
                 "group": "internal"
               },
               {
-                "pattern": "hooks",
+                "pattern": "pages",
                 "group": "internal"
               },
               {
-                "pattern": "entities",
+                "pattern": "styles",
                 "group": "internal"
               },
               {
-                "pattern": "utils",
+                "pattern": "assets",
                 "group": "internal"
               }
             ],
@@ -97,8 +95,7 @@
               "caseInsensitive": true
             }
           }
-        ],
-        "arrow-parens":                        ["error", "always"]
+        ]
       }
     },
     {

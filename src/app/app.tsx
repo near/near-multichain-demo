@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { MainLayout } from '@/components/layout';
+import CreateAccount from '@/pages/CreateAccount';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/NotFound';
 
@@ -12,6 +13,7 @@ const App: React.FC = () => (
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />}></Route>
+          <Route path="create-account" element={<CreateAccount />}></Route>
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
