@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nx serve",
     "build": "nx build",
+    "prepare": "husky install",
     "test": "nx test"
   },
   "private": true,
@@ -52,7 +53,9 @@
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.0",
     "jsdom": "~22.1.0",
+    "lint-staged": "^15.2.2",
     "nx": "18.0.1",
     "prettier": "^3.2.5",
     "sass": "^1.55.0",
