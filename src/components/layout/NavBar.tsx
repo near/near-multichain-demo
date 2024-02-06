@@ -11,7 +11,7 @@ const NavBar = () => (
         lineHeight="130%"
         letterSpacing="0.3px"
         my={0}
-        fontFamily="FKGroteskNeueTrial-ThinItalic-BF6576818c5cbd8"
+        fontFamily="FK Grotesk Monospaced"
       >
         Multi Chain Demo
       </Text>

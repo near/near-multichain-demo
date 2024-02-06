@@ -6,8 +6,8 @@ import NavBar from './NavBar';
 
 const Layout = () => (
   <Flex
-    h={{ base: '100%', lg: '844px' }}
-    w={{ base: '100%', lg: '390px' }}
+    h={{ base: '100vh', md: '844px' }}
+    w={{ base: '100vw', md: '390px' }}
     flexDir="column"
     mx="auto"
     p="0px 20px"
@@ -17,7 +17,7 @@ const Layout = () => (
   >
     <Flex h="full" w="full" flexDir="column">
       <NavBar />
-      <Box boxSizing="border-box" w="full" bg="white">
+      <Box boxSizing="border-box" w="full" bg="white" mt={8}>
         <Outlet />
       </Box>
     </Flex>
