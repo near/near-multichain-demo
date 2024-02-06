@@ -5,7 +5,6 @@ import {
   FormHelperText,
   Flex,
   Button as ChakraButton,
-  StyleProps,
   InputProps,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -91,7 +90,7 @@ const CreateAccount = () => {
           <>
             <PageTitle>Check Your Email</PageTitle>
             <FormControl w="90%" mx="auto">
-              <Flex mb={2} justify="space-around" gap={1}>
+              <Flex mb={2} justify="space-around">
                 <Flex justify="space-between" gap={1}>
                   {Array.from({ length: 3 }).map((_, index) => (
                     <Input
@@ -109,20 +108,24 @@ const CreateAccount = () => {
                   ))}
                 </Flex>
                 <Flex justify="space-between" gap={1}>
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <Input
-                      key={index}
-                      name={`codes.${index}`}
-                      ref={
-                        inputRefs[
-                          index
-                        ] as unknown as RefObject<HTMLInputElement>
-                      }
-                      onChange={e => onInputChange(index, e)}
-                      value={formValues.code?.[index]}
-                      {...commonInputProps}
-                    />
-                  ))}
+                  {Array.from({ length: 3 }).map((_, _index) => {
+                    // Push the three inputs forward, see design
+                    const index = _index + 3;
+                    return (
+                      <Input
+                        key={index}
+                        name={`codes.${index}`}
+                        ref={
+                          inputRefs[
+                            index
+                          ] as unknown as RefObject<HTMLInputElement>
+                        }
+                        onChange={e => onInputChange(index, e)}
+                        value={formValues.code?.[index]}
+                        {...commonInputProps}
+                      />
+                    );
+                  })}
                 </Flex>
               </Flex>
               <Flex align="center" gap={1} mt={1}>
