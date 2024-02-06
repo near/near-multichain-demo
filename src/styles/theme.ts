@@ -33,10 +33,21 @@ const styles = {
 const colors = {
   '--Sand-Light-1': '#FDFDFC',
   '--Sand-Light-2': '#F9F9F8',
+  '--Sand-Light-3': '#F3F3F2',
   '--Sand-Light-4': '#EEEEEC',
   '--Sand-Light-6': '#E3E3E0',
+  '--Sand-Light-8': '#C8C7C1',
   '--Sand-Light-11': '#706F6C',
   '--Sand-Light-12': '#1B1B18',
+  '--Sand-Dark-1': '#161615',
+  '--Green-Light-8': '#37CD83',
+  '--Green-Light-9': '#63E3A4',
+  '--Green-Light-12': '#052E1A',
+  '--Red-Light-8': '#D95C4A',
+  '--Red-Light-9': '#F77A69',
+  '--Red-Light-12': '#4B0B02',
+  '--Violet-Light-8': '#604CC8',
+  '--Violet-Light-12': '#191641',
 };
 
 export const theme = extendTheme({
@@ -48,9 +59,16 @@ export const theme = extendTheme({
       variants: {
         defaultVariant: {
           field: {
-            fontSize: '14px',
+            fontSize: '16px',
+            fontWeight: 450,
             border: '1px solid',
-            borderColor: '#DCDFE3',
+            borderColor: '--Violet-Light-8',
+            color: '--Violet-Light-12',
+            padding: '8px 12px',
+            height: '40px',
+            borderRadius: '6px',
+            boxShadow: '0px 0px 0px 4px #CBC7F4',
+            letterSpacing: '0.32px',
             _hover: {},
             _focus: {
               outline: 'none',
