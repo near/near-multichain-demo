@@ -1,5 +1,4 @@
 import { extendTheme } from '@chakra-ui/react';
-import { mode } from '@chakra-ui/theme-tools';
 
 const styles = {
   global: (props: Record<string, unknown>) => {
@@ -49,9 +48,15 @@ const colors = {
   '--Violet-Light-12': '#191641',
 };
 
+const fonts = {
+  heading: `'FK Grotesk', sans-serif`,
+  body: `'Mona Sans', sans-serif`,
+};
+
 export const theme = extendTheme({
   styles,
   colors,
+  fonts,
   components: {
     Input: {
       baseStyle: {},

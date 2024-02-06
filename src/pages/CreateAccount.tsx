@@ -5,6 +5,8 @@ import {
   FormHelperText,
   Flex,
   Button as ChakraButton,
+  StyleProps,
+  InputProps,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState, RefObject, useEffect } from 'react';
@@ -55,6 +57,12 @@ const CreateAccount = () => {
 
   const onSubmitForm = () => {};
 
+  const commonInputProps: InputProps = {
+    height: '40px',
+    width: '40px',
+    onPaste,
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
       <Card gap="32px">
@@ -82,22 +90,40 @@ const CreateAccount = () => {
         {currentStep === steps.VERIFY_EMAIL && (
           <>
             <PageTitle>Check Your Email</PageTitle>
-            <FormControl>
-              <Flex mb={2} justify="space-between">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <Input
-                    onPaste={onPaste}
-                    key={index}
-                    name={`codes.${index}`}
-                    ref={
-                      inputRefs[index] as unknown as RefObject<HTMLInputElement>
-                    }
-                    height="40px"
-                    width="40px"
-                    onChange={e => onInputChange(index, e)}
-                    value={formValues.code?.[index]}
-                  />
-                ))}
+            <FormControl w="90%" mx="auto">
+              <Flex mb={2} justify="space-around" gap={1}>
+                <Flex justify="space-between" gap={1}>
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <Input
+                      key={index}
+                      name={`codes.${index}`}
+                      ref={
+                        inputRefs[
+                          index
+                        ] as unknown as RefObject<HTMLInputElement>
+                      }
+                      onChange={e => onInputChange(index, e)}
+                      value={formValues.code?.[index]}
+                      {...commonInputProps}
+                    />
+                  ))}
+                </Flex>
+                <Flex justify="space-between" gap={1}>
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <Input
+                      key={index}
+                      name={`codes.${index}`}
+                      ref={
+                        inputRefs[
+                          index
+                        ] as unknown as RefObject<HTMLInputElement>
+                      }
+                      onChange={e => onInputChange(index, e)}
+                      value={formValues.code?.[index]}
+                      {...commonInputProps}
+                    />
+                  ))}
+                </Flex>
               </Flex>
               <Flex align="center" gap={1} mt={1}>
                 <FormHelperText

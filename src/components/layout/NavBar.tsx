@@ -1,20 +1,27 @@
-import { Flex, Text, Stack, IconButton, Image } from '@chakra-ui/react';
+import {
+  Flex,
+  Text,
+  Stack,
+  IconButton,
+  Image,
+  Heading,
+} from '@chakra-ui/react';
 import SignOutSvg from '@/assets/SignOut.svg';
 
 const NavBar = () => (
   <Flex align="center" p="24px 0" alignSelf="stretch" justify="space-between">
     <Stack spacing={0}>
-      <Text
+      <Heading
         color="--Sand-Light-12"
         fontSize="20px"
         fontWeight={500}
         lineHeight="130%"
         letterSpacing="0.3px"
         my={0}
-        fontFamily="FK Grotesk Monospaced"
+        fontFamily="FK Grotesk"
       >
         Multi Chain Demo
-      </Text>
+      </Heading>
       <Text
         color="--Sand-Light-11"
         fontSize="12px"
