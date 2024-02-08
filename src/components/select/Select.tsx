@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Select, { Props, components } from 'react-select';
 import { StylesConfig } from 'react-select/dist/declarations/src/styles';
 
@@ -15,6 +15,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   components,
   ...props
 }) => {
+  const [menuIsOpen, setMenuIsOpen] = useState(false);
+
   const defaultStyles: StylesConfig = {
     container: (provided, state) => ({
       ...provided,
@@ -74,11 +76,25 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       right: 0,
     }),
   };
+
+  const handleMenuOpen = () => {
+    setMenuIsOpen(true);
+  };
+
+  const handleMenuClose = () => {
+    setMenuIsOpen(false);
+  };
+
   return (
     <Select
+      isClearable
+      onMenuOpen={handleMenuOpen}
+      onMenuClose={handleMenuClose}
       styles={{ ...defaultStyles, ...customStyles }}
       components={{
-        DropdownIndicator,
+        DropdownIndicator: props => (
+          <DropdownIndicator {...props} isActive={menuIsOpen} />
+        ),
         IndicatorSeparator: () => null,
         ...components,
       }}

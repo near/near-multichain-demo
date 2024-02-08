@@ -60,7 +60,7 @@ const GenerateTransaction = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors = {} },
+    formState: { errors = {}, isValid },
     control,
   } = useForm({
     mode: 'all',

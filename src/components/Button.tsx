@@ -3,6 +3,7 @@ import {
   ButtonProps as ChakraButtonProps,
 } from '@chakra-ui/react';
 import { match } from 'ts-pattern';
+import ButtonSpinner from './ButtonSpinner';
 
 type ButtonProps = ChakraButtonProps & {
   variant?: 'green' | 'black' | 'red';
@@ -20,7 +21,18 @@ const commonProps: ChakraButtonProps = {
   lineHeight: '150%',
   _hover: { opacity: 1 },
   _active: { opacity: 1 },
-  _disabled: { opacity: 1, color: '--Sand-Light-4', bg: '--Sand-Light-3' },
+  _disabled: {
+    opacity: 1,
+    color: '--Sand-Light-8',
+    bg: '--Sand-Light-3',
+    borderColor: 'transparent',
+    cursor: 'default',
+  },
+  spinner: <ButtonSpinner />,
+  _loading: {
+    borderColor: '--Sand-Light-6',
+    bg: '--Sand-Light-1',
+  },
 };
 
 export default function Button({ variant = 'green', ...props }: ButtonProps) {
