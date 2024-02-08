@@ -1,12 +1,9 @@
 import {
   FormControl,
   FormErrorMessage,
-  Input,
   FormHelperText,
   Flex,
-  Button as ChakraButton,
   FormLabel,
-  InputProps,
   ChakraProps,
   Image,
   IconButton,
@@ -14,11 +11,9 @@ import {
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
-  NumberDecrementStepper,
-  Icon,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import CopySvg from '@/assets/Copy.svg';
@@ -48,14 +43,10 @@ const GenerateTransaction = () => {
     register,
     handleSubmit,
     formState: { errors = {} },
-    watch,
-    setValue,
   } = useForm({
     mode: 'all',
     resolver: yupResolver(schema),
   });
-
-  const formValues = watch();
 
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
 
@@ -63,9 +54,9 @@ const GenerateTransaction = () => {
     setIsAmountInputFocused(true);
   };
 
-  const onSubmitForm = () => {};
-
-  console.log('assets ', assets);
+  const onSubmitForm = (values: Record<string, unknown>) => {
+    console.log('values ', values);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
