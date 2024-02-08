@@ -31,7 +31,7 @@ const schema = yup.object().shape({
 });
 
 const CreateAccount = () => {
-  const [currentStep, setCurrentStep] = useState(steps.VERIFY_EMAIL);
+  const [currentStep, setCurrentStep] = useState(steps.GET_STARTED);
 
   const { inputRefs, onInputChange, code, onPaste } = useVerificationCode();
 
@@ -54,7 +54,9 @@ const CreateAccount = () => {
     setValue('code', code);
   }, [code, setValue]);
 
-  const onSubmitForm = () => {};
+  const onSubmitForm = () => {
+    setCurrentStep(steps.VERIFY_EMAIL);
+  };
 
   const commonInputProps: InputProps = {
     height: '40px',
