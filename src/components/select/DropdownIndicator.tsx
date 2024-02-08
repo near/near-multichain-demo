@@ -9,8 +9,6 @@ const DropdownIndicator = (
 ) => {
   const fillColor: string = props.isActive ? '#604CC8' : '#706F6C';
 
-  console.log('isActive ', props.isActive);
-
   return (
     <components.DropdownIndicator {...props}>
       <svg
