@@ -20,4 +20,10 @@ const keyTypes = [
   },
 ];
 
+export const signerAppBehavior: Record<string, string> = {
+  domainKey: 'No confirmation required',
+  personalKey: 'Request for confirmation',
+  wrongDomainKey: 'Warning message before confirming',
+};
+
 export default keyTypes;

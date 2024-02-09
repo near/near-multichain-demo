@@ -12,13 +12,11 @@ import {
   InputRightElement,
   IconButton,
   Image,
-  StyleProps,
   ChakraProps,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { CSSProperties, useState } from 'react';
-import { useForm, Controller, get } from 'react-hook-form';
-import { StylesConfig } from 'react-select/dist/declarations/src/styles';
+import { useMemo, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 
 import CopySvg from '@/assets/Copy.svg';
@@ -28,8 +26,8 @@ import GenerateAddress from '@/components/GenerateAddress';
 import PageTitle from '@/components/PageTitle';
 import PlusCircle from '@/components/PlusCircle';
 import { Select, KeyTypeOption, AssetOption } from '@/components/select';
-import assets from '@/data/assets';
-import keyTypes from '@/data/keyTypes';
+import assets, { associatedNetwork } from '@/data/assets';
+import keyTypes, { signerAppBehavior } from '@/data/keyTypes';
 
 const helperTextProps = {
   fontSize: '12px',
@@ -95,8 +93,19 @@ const GenerateTransaction = () => {
       // amount: 0.01,
     },
   });
-
   const formValues = watch();
+
+  const keyTypeAssistiveText = useMemo(() => {
+    const selected = formValues?.keyType?.value;
+    if (selected) return signerAppBehavior[selected];
+    return null;
+  }, [formValues.keyType]);
+
+  const assetAssistiveText = useMemo(() => {
+    const selected = formValues?.asset?.value;
+    if (selected) return associatedNetwork[selected];
+    return null;
+  }, [formValues.asset]);
 
   const handleAmountInputFocus = () => {
     setIsAmountInputFocused(true);
@@ -135,8 +144,8 @@ const GenerateTransaction = () => {
               />
             )}
           />
-          <FormHelperText {...helperTextProps} color="--Sand-Light-11">
-            No confirmation required
+          <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
+            {keyTypeAssistiveText}
           </FormHelperText>
           <FormErrorMessage>{errors?.keyType?.message}</FormErrorMessage>
         </FormControl>
@@ -160,8 +169,8 @@ const GenerateTransaction = () => {
                 />
               )}
             />
-            <FormHelperText {...helperTextProps} color="--Sand-Light-11">
-              Ethereum Testnet Network
+            <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
+              {assetAssistiveText}
             </FormHelperText>
             <FormErrorMessage>{errors?.asset?.message}</FormErrorMessage>
           </FormControl>
@@ -204,7 +213,7 @@ const GenerateTransaction = () => {
               <PlusCircle isActive={isAmountInputFocused} cursor="pointer" />
             </NumberInputStepper>
           </NumberInput>
-          <FormHelperText {...helperTextProps} color="--Sand-Light-11">
+          <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
             42.331 available
           </FormHelperText>
           <FormErrorMessage>{errors?.amount?.message}</FormErrorMessage>

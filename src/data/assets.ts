@@ -19,4 +19,10 @@ const assets = [
   },
 ];
 
+export const associatedNetwork: Record<string, string> = {
+  eth: 'Ethereum Testnet Network',
+  btc: 'Bitcoin network',
+  bnb: 'Binance Smart Chain network',
+};
+
 export default assets;
