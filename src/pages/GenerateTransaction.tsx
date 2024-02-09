@@ -13,6 +13,7 @@ import {
   IconButton,
   Image,
   ChakraProps,
+  NumberIncrementStepper,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useMemo, useState } from 'react';
@@ -90,7 +91,7 @@ const GenerateTransaction = () => {
     defaultValues: {
       keyType: defaultKeyType,
       asset: defaultAsset,
-      // amount: 0.01,
+      amount: 0.01,
     },
   });
   const formValues = watch();
@@ -192,7 +193,7 @@ const GenerateTransaction = () => {
           <FormLabel {...helperTextProps} fontWeight={600}>
             Amount
           </FormLabel>
-          <NumberInput defaultValue={1} step={2}>
+          <NumberInput step={0.01}>
             <NumberInputField
               {...register('amount')}
               h="40px"
@@ -210,7 +211,9 @@ const GenerateTransaction = () => {
               justifyContent="center"
               mb={0}
             >
-              <PlusCircle isActive={isAmountInputFocused} cursor="pointer" />
+              <NumberIncrementStepper border="none">
+                <PlusCircle isActive={isAmountInputFocused} cursor="pointer" />
+              </NumberIncrementStepper>
             </NumberInputStepper>
           </NumberInput>
           <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
@@ -238,7 +241,7 @@ const GenerateTransaction = () => {
           </InputGroup>
           <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
         </FormControl>
-        <Button w="full" variant="black" type="submit" disabled={!isValid}>
+        <Button w="full" variant="black" type="submit" isDisabled={!isValid}>
           Continue
         </Button>
       </Card>

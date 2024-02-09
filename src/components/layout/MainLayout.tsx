@@ -17,7 +17,7 @@ const Layout = () => (
   >
     <Flex h="full" w="full" flexDir="column">
       <NavBar />
-      <Box boxSizing="border-box" w="full" bg="white" mt={8}>
+      <Box boxSizing="border-box" w="full" bg="white" mt={{ base: 1, md: 8 }}>
         <Outlet />
       </Box>
     </Flex>
