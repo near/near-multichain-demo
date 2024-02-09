@@ -76,8 +76,8 @@ export const theme = extendTheme({
             _hover: {},
             _focus: {
               outline: 'none',
-              boxShadow: '0px 0px 0px 4px #CBC7F4',
               borderColor: '--Violet-Light-8',
+              boxShadow: '0px 0px 0px 4px #CBC7F4',
             },
           },
         },

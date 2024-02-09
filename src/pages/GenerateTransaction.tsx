@@ -2,23 +2,25 @@ import {
   FormControl,
   FormErrorMessage,
   FormHelperText,
-  Flex,
   FormLabel,
-  ChakraProps,
-  Image,
-  IconButton,
+  Flex,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  NumberIncrementStepper,
   InputGroup,
   Input,
   InputRightElement,
+  IconButton,
+  Image,
+  StyleProps,
+  ChakraProps,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { CSSProperties, useState } from 'react';
+import { useForm, Controller, get } from 'react-hook-form';
+import { StylesConfig } from 'react-select/dist/declarations/src/styles';
 import * as yup from 'yup';
+
 import CopySvg from '@/assets/Copy.svg';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
@@ -29,12 +31,27 @@ import { Select, KeyTypeOption, AssetOption } from '@/components/select';
 import assets from '@/data/assets';
 import keyTypes from '@/data/keyTypes';
 
-const helperTextProps: ChakraProps = {
+const helperTextProps = {
   fontSize: '12px',
   fontWeight: 450,
   lineHeight: '140%',
   letterSpacing: '0.24px',
   my: '2px',
+};
+
+const getComputedInputStyles = (
+  errors: Record<string, unknown>,
+  inputName: string
+): ChakraProps => {
+  const hasInput = !!errors[inputName];
+  return {
+    borderColor: hasInput ? '#D95C4A' : '--Sand-Light-6',
+    _focus: {
+      borderColor: hasInput ? '#D95C4A' : '--Violet-Light-8',
+      outline: 'none',
+      boxShadow: hasInput ? 'none' : '0px 0px 0px 4px #CBC7F4',
+    },
+  };
 };
 
 const schema = yup.object().shape({
@@ -56,19 +73,30 @@ const schema = yup.object().shape({
   address: yup.string().required('This is required'),
 });
 
+const defaultKeyType = keyTypes.find(keyType => keyType.value === 'domainKey');
+const defaultAsset = assets.find(asset => asset.value === 'eth');
+
 const GenerateTransaction = () => {
+  const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
+  const [isAddressInputFocused, setIsAddressInputFocused] = useState(false);
+
   const {
     register,
     handleSubmit,
     formState: { errors = {}, isValid },
     control,
+    watch,
   } = useForm({
-    mode: 'all',
+    mode: 'onSubmit',
     resolver: yupResolver(schema),
+    defaultValues: {
+      keyType: defaultKeyType,
+      asset: defaultAsset,
+      // amount: 0.01,
+    },
   });
 
-  const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
-  const [isAddressInputFocused, setIsAddressInputFocused] = useState(false);
+  const formValues = watch();
 
   const handleAmountInputFocus = () => {
     setIsAmountInputFocused(true);
@@ -78,9 +106,11 @@ const GenerateTransaction = () => {
     setIsAddressInputFocused(true);
   };
 
-  const onSubmitForm = (values: Record<string, unknown>) => {
+  const onSubmitForm = (values: any) => {
     console.log('values ', values);
   };
+
+  console.log('formValues ', formValues);
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
@@ -96,29 +126,19 @@ const GenerateTransaction = () => {
             render={({ field }) => (
               <Select
                 {...field}
-                options={keyTypes.map(({ name, value, iconImage }) => ({
-                  label: name,
-                  value,
-                  iconImage,
-                }))}
-                onChange={e => {
-                  field.onChange(e);
-                }}
+                options={keyTypes}
+                onChange={e => field.onChange(e)}
                 placeholder="Select..."
-                components={{
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-expect-error
-                  Option: KeyTypeOption,
-                }}
+                // eslint-disable-next-line
+                //@ts-ignore
+                components={{ Option: KeyTypeOption }}
               />
             )}
           />
           <FormHelperText {...helperTextProps} color="--Sand-Light-11">
             No confirmation required
           </FormHelperText>
-          <FormErrorMessage>
-            {errors?.keyType?.message && errors.keyType.message.toString()}
-          </FormErrorMessage>
+          <FormErrorMessage>{errors?.keyType?.message}</FormErrorMessage>
         </FormControl>
         <Flex w="full" align="center" gap={3}>
           <FormControl>
@@ -131,33 +151,19 @@ const GenerateTransaction = () => {
               render={({ field }) => (
                 <Select
                   {...field}
-                  options={assets.map(
-                    ({ name, value, iconImage, networkImage }) => ({
-                      label: name,
-                      value,
-                      iconImage,
-                      networkImage,
-                    })
-                  )}
-                  onChange={e => {
-                    field.onChange(e);
-                  }}
+                  options={assets}
+                  onChange={e => field.onChange(e)}
                   placeholder="Select..."
-                  components={{
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-expect-error
-                    Option: AssetOption,
-                  }}
+                  // eslint-disable-next-line
+                  //@ts-ignore
+                  components={{ Option: AssetOption }}
                 />
               )}
             />
-
             <FormHelperText {...helperTextProps} color="--Sand-Light-11">
-              Ethereum Testnet Network{' '}
+              Ethereum Testnet Network
             </FormHelperText>
-            <FormErrorMessage>
-              {errors?.keyType?.message && errors.keyType.message.toString()}
-            </FormErrorMessage>
+            <FormErrorMessage>{errors?.asset?.message}</FormErrorMessage>
           </FormControl>
           <IconButton
             h="40px"
@@ -169,47 +175,40 @@ const GenerateTransaction = () => {
             borderColor="--Sand-Light-6"
             borderRadius="50px"
             colorScheme="blue"
-            aria-label="Logout"
-            icon={<Image src={`${CopySvg}`} />}
+            aria-label="Copy"
+            icon={<Image src={CopySvg} />}
           />
         </Flex>
         <FormControl>
           <FormLabel {...helperTextProps} fontWeight={600}>
             Amount
           </FormLabel>
-          <NumberInput defaultValue={0.01} step={0.01}>
+          <NumberInput defaultValue={1} step={2}>
             <NumberInputField
               {...register('amount')}
               h="40px"
               p="8px 12px"
               borderRadius="6px"
               border="1px solid"
-              borderColor="--Sand-Light-6"
               bg="--Sand-Light-1"
-              _focus={{
-                outline: 'none',
-                borderColor: '--Sand-Light-6',
-                boxShadow: 'none',
-              }}
+              {...getComputedInputStyles(errors, 'amount')}
               onFocus={handleAmountInputFocus}
               onBlur={() => setIsAmountInputFocused(false)}
             />
-            <NumberInputStepper mr="8px">
-              <NumberIncrementStepper
-                border="none"
-                children={<PlusCircle isActive={isAmountInputFocused} />}
-                w="20px"
-                h="20px"
-              />
+            <NumberInputStepper
+              mr="8px"
+              display="flex"
+              justifyContent="center"
+              mb={0}
+            >
+              <PlusCircle isActive={isAmountInputFocused} cursor="pointer" />
             </NumberInputStepper>
           </NumberInput>
           <FormHelperText {...helperTextProps} color="--Sand-Light-11">
-            42.331 available{' '}
+            42.331 available
           </FormHelperText>
-          <FormErrorMessage>
-            {errors?.amount?.message && errors.amount.message.toString()}
-          </FormErrorMessage>
-        </FormControl>{' '}
+          <FormErrorMessage>{errors?.amount?.message}</FormErrorMessage>
+        </FormControl>
         <FormControl>
           <FormLabel {...helperTextProps} fontWeight={600}>
             Send To
@@ -220,20 +219,22 @@ const GenerateTransaction = () => {
               placeholder="ETH address"
               onFocus={handleAddressInputFocus}
               onBlur={() => setIsAddressInputFocused(false)}
+              border="1px solid"
+              bg="--Sand-Light-1"
+              {...getComputedInputStyles(errors, 'address')}
             />
             <InputRightElement>
-              <GenerateAddress isActive={isAddressInputFocused} />{' '}
+              <GenerateAddress isActive={isAddressInputFocused} />
             </InputRightElement>
           </InputGroup>
-          <FormErrorMessage>
-            {errors?.address?.message && errors.address.message.toString()}
-          </FormErrorMessage>
+          <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
         </FormControl>
-        <Button w="full" variant="black" type="submit">
+        <Button w="full" variant="black" type="submit" disabled={!isValid}>
           Continue
         </Button>
       </Card>
     </form>
   );
 };
+
 export default GenerateTransaction;

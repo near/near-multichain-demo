@@ -1,18 +1,18 @@
 const assets = [
   {
-    name: 'ETH',
+    label: 'ETH',
     value: 'eth',
     iconImage: '/images/ETH.png',
     networkImage: '/images/ETH-network.png',
   },
   {
-    name: 'BTC',
+    label: 'BTC',
     value: 'btc',
     iconImage: '/images/BTC.png',
     networkImage: '/images/BTC-network.png',
   },
   {
-    name: 'BNB',
+    label: 'BNB',
     value: 'bnb',
     iconImage: '/images/BNB.png',
     networkImage: '/images/BSC.png',

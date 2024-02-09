@@ -4,18 +4,18 @@ import WrongDomainKey from '@/assets/WrongDomainKey.svg';
 
 const keyTypes = [
   {
-    name: 'Domain Key',
-    value: 'domain-key',
+    label: 'Domain Key',
+    value: 'domainKey',
     iconImage: DomainKey,
   },
   {
-    name: 'Personal Key',
-    value: 'personal-key',
+    label: 'Personal Key',
+    value: 'personalKey',
     iconImage: PersonalKey,
   },
   {
-    name: 'Wrong Domain Key',
-    value: 'wrong-domain-key',
+    label: 'Wrong Domain Key',
+    value: 'wrongDomainKey',
     iconImage: WrongDomainKey,
   },
 ];

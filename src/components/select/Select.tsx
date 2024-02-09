@@ -8,6 +8,7 @@ interface CustomSelectProps extends Props<any> {
   // Define any additional props you need
   customStyles?: StylesConfig;
   components?: typeof components;
+  error?: boolean;
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -21,9 +22,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     container: (provided, state) => ({
       ...provided,
       borderRadius: '6px',
-      border: '0.3px solid',
       borderColor: state.isFocused ? '#604CC8' : '#E3E3E0',
-      boxShadow: state.isFocused ? '0px 0px 0px 4px #CBC7F4' : 'none',
+      boxShadow:
+        props.error || !state.isFocused ? 'none' : '0px 0px 0px 4px #CBC7F4',
       backgroundColor: '#FFFFFF',
       outline: 'none',
     }),
@@ -39,11 +40,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       fontFamily: 'Mona Sans',
       letterSpacing: '0.32px',
     }),
-    control: provided => ({
+    control: (provided, state) => ({
       // class attribute : class=" css-i32vvf-control"
       ...provided,
       height: 40,
       minHeight: 'initial',
+      borderWidth: '1px',
+      borderColor: props.error && !state.isFocused ? '#D95C4A' : undefined,
     }),
 
     placeholder: provided => ({
@@ -87,7 +90,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
   return (
     <Select
-      isClearable
       onMenuOpen={handleMenuOpen}
       onMenuClose={handleMenuClose}
       styles={{ ...defaultStyles, ...customStyles }}
