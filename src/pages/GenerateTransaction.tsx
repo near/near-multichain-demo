@@ -14,15 +14,18 @@ import {
   Image,
   ChakraProps,
   NumberIncrementStepper,
+  Box,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 
 import CopySvg from '@/assets/Copy.svg';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
+import { ModalManager as ConfirmationModalModalManager } from '@/components/ConfirmationModal/ConfirmationModal';
+import ModalContents from '@/components/ConfirmationModal/ModalContents';
 import GenerateAddress from '@/components/GenerateAddress';
 import PageTitle from '@/components/PageTitle';
 import PlusCircle from '@/components/PlusCircle';
@@ -78,7 +81,7 @@ const defaultAsset = assets.find(asset => asset.value === 'eth');
 const GenerateTransaction = () => {
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
   const [isAddressInputFocused, setIsAddressInputFocused] = useState(false);
-
+  const ref = useRef<HTMLDivElement | null>(null);
   const {
     register,
     handleSubmit,
@@ -92,6 +95,7 @@ const GenerateTransaction = () => {
       keyType: defaultKeyType,
       asset: defaultAsset,
       amount: 0.01,
+      address: 'mw5vJDm1Vx0xyBCiMsaT7',
     },
   });
   const formValues = watch();
@@ -108,144 +112,156 @@ const GenerateTransaction = () => {
     return null;
   }, [formValues.asset]);
 
-  const handleAmountInputFocus = () => {
-    setIsAmountInputFocused(true);
-  };
-
-  const handleAddressInputFocus = () => {
-    setIsAddressInputFocused(true);
-  };
+  const toggleAmountFocus = () => setIsAmountInputFocused(focused => !focused);
+  const toggleAddressFocus = () =>
+    setIsAddressInputFocused(focused => !focused);
 
   const onSubmitForm = (values: any) => {
     console.log('values ', values);
   };
 
-  console.log('formValues ', formValues);
-
   return (
-    <form onSubmit={handleSubmit(onSubmitForm)}>
-      <Card gap="20px">
-        <PageTitle>Generate Transaction</PageTitle>
-        <FormControl>
-          <FormLabel {...helperTextProps} fontWeight={600}>
-            Key Type
-          </FormLabel>
-          <Controller
-            name="keyType"
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                options={keyTypes}
-                onChange={e => field.onChange(e)}
-                placeholder="Select..."
-                // eslint-disable-next-line
-                //@ts-ignore
-                components={{ Option: KeyTypeOption }}
-              />
-            )}
-          />
-          <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
-            {keyTypeAssistiveText}
-          </FormHelperText>
-          <FormErrorMessage>{errors?.keyType?.message}</FormErrorMessage>
-        </FormControl>
-        <Flex w="full" align="center" gap={3}>
+    <Box w="fit-contet" h="fit-content" ref={ref}>
+      <form onSubmit={handleSubmit(onSubmitForm)}>
+        <Card gap="20px">
+          <PageTitle>Generate Transaction</PageTitle>
           <FormControl>
             <FormLabel {...helperTextProps} fontWeight={600}>
-              Asset
+              Key Type
             </FormLabel>
             <Controller
-              name="asset"
+              name="keyType"
               control={control}
               render={({ field }) => (
                 <Select
                   {...field}
-                  options={assets}
+                  options={keyTypes}
                   onChange={e => field.onChange(e)}
                   placeholder="Select..."
-                  // eslint-disable-next-line
-                  //@ts-ignore
-                  components={{ Option: AssetOption }}
+                  components={{ Option: KeyTypeOption } as never}
                 />
               )}
             />
             <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
-              {assetAssistiveText}
+              {keyTypeAssistiveText}
             </FormHelperText>
-            <FormErrorMessage>{errors?.asset?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors?.keyType?.message}</FormErrorMessage>
           </FormControl>
-          <IconButton
-            h="40px"
-            w="40px"
-            bg="--Sand-Light-1"
-            opacity={0.9}
-            _hover={{ bg: '--Sand-Light-1', opacity: 1 }}
-            border="1px solid"
-            borderColor="--Sand-Light-6"
-            borderRadius="50px"
-            colorScheme="blue"
-            aria-label="Copy"
-            icon={<Image src={CopySvg} />}
-          />
-        </Flex>
-        <FormControl>
-          <FormLabel {...helperTextProps} fontWeight={600}>
-            Amount
-          </FormLabel>
-          <NumberInput step={0.01}>
-            <NumberInputField
-              {...register('amount')}
+          <Flex w="full" align="center" gap={3}>
+            <FormControl>
+              <FormLabel {...helperTextProps} fontWeight={600}>
+                Asset
+              </FormLabel>
+              <Controller
+                name="asset"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={assets}
+                    onChange={e => field.onChange(e)}
+                    placeholder="Select..."
+                    components={{ Option: AssetOption } as never}
+                  />
+                )}
+              />
+              <FormHelperText
+                {...helperTextProps}
+                color="--Sand-Light-11"
+                mt={1}
+              >
+                {assetAssistiveText}
+              </FormHelperText>
+              <FormErrorMessage>{errors?.asset?.message}</FormErrorMessage>
+            </FormControl>
+            <IconButton
               h="40px"
-              p="8px 12px"
-              borderRadius="6px"
-              border="1px solid"
+              w="40px"
               bg="--Sand-Light-1"
-              {...getComputedInputStyles(errors, 'amount')}
-              onFocus={handleAmountInputFocus}
-              onBlur={() => setIsAmountInputFocused(false)}
-            />
-            <NumberInputStepper
-              mr="8px"
-              display="flex"
-              justifyContent="center"
-              mb={0}
-            >
-              <NumberIncrementStepper border="none">
-                <PlusCircle isActive={isAmountInputFocused} cursor="pointer" />
-              </NumberIncrementStepper>
-            </NumberInputStepper>
-          </NumberInput>
-          <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
-            42.331 available
-          </FormHelperText>
-          <FormErrorMessage>{errors?.amount?.message}</FormErrorMessage>
-        </FormControl>
-        <FormControl>
-          <FormLabel {...helperTextProps} fontWeight={600}>
-            Send To
-          </FormLabel>
-          <InputGroup>
-            <Input
-              {...register('address')}
-              placeholder="ETH address"
-              onFocus={handleAddressInputFocus}
-              onBlur={() => setIsAddressInputFocused(false)}
+              opacity={0.9}
+              _hover={{ bg: '--Sand-Light-1', opacity: 1 }}
               border="1px solid"
-              bg="--Sand-Light-1"
-              {...getComputedInputStyles(errors, 'address')}
+              borderColor="--Sand-Light-6"
+              borderRadius="50px"
+              colorScheme="blue"
+              aria-label="Copy"
+              icon={<Image src={CopySvg} />}
             />
-            <InputRightElement>
-              <GenerateAddress isActive={isAddressInputFocused} />
-            </InputRightElement>
-          </InputGroup>
-          <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
-        </FormControl>
-        <Button w="full" variant="black" type="submit" isDisabled={!isValid}>
-          Continue
-        </Button>
-      </Card>
-    </form>
+          </Flex>
+          <FormControl>
+            <FormLabel {...helperTextProps} fontWeight={600}>
+              Amount
+            </FormLabel>
+            <NumberInput step={0.01}>
+              <NumberInputField
+                {...register('amount')}
+                h="40px"
+                p="8px 12px"
+                borderRadius="6px"
+                border="1px solid"
+                bg="--Sand-Light-1"
+                {...getComputedInputStyles(errors, 'amount')}
+                onFocus={toggleAmountFocus}
+                onBlur={toggleAmountFocus}
+              />
+              <NumberInputStepper
+                mr="8px"
+                display="flex"
+                justifyContent="center"
+                mb={0}
+              >
+                <NumberIncrementStepper border="none">
+                  <PlusCircle
+                    isActive={isAmountInputFocused}
+                    cursor="pointer"
+                  />
+                </NumberIncrementStepper>
+              </NumberInputStepper>
+            </NumberInput>
+            <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
+              42.331 available
+            </FormHelperText>
+            <FormErrorMessage>{errors?.amount?.message}</FormErrorMessage>
+          </FormControl>
+          <FormControl>
+            <FormLabel {...helperTextProps} fontWeight={600}>
+              Send To
+            </FormLabel>
+            <InputGroup>
+              <Input
+                {...register('address')}
+                placeholder="ETH address"
+                onFocus={toggleAddressFocus}
+                onBlur={toggleAddressFocus}
+                border="1px solid"
+                bg="--Sand-Light-1"
+                {...getComputedInputStyles(errors, 'address')}
+                pr="40px"
+              />
+
+              <InputRightElement>
+                <GenerateAddress isActive={isAddressInputFocused} />
+              </InputRightElement>
+            </InputGroup>
+            <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
+          </FormControl>
+          <ConfirmationModalModalManager
+            children={<ModalContents confirmationType="WRONG_KEY" />}
+            triggerFn={({ trigger }) => (
+              <Button
+                onClick={() => trigger()}
+                w="full"
+                variant="black"
+                type="submit"
+                isDisabled={!isValid}
+              >
+                Continue
+              </Button>
+            )}
+          />
+        </Card>
+      </form>
+    </Box>
   );
 };
 

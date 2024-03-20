@@ -30,7 +30,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }),
     // Define your default styles here, or you can override them using customStyles prop
     input: provided => ({
-      // class attribute : class=" css-i32vvf-control"
       ...provided,
       padding: '8px 12px',
       borderRadius: 'inherit',
@@ -41,7 +40,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       letterSpacing: '0.32px',
     }),
     control: (provided, state) => ({
-      // class attribute : class=" css-i32vvf-control"
       ...provided,
       height: 40,
       minHeight: 'initial',
@@ -52,6 +50,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     placeholder: provided => ({
       ...provided,
       color: '#1B1B18', // Customize placeholder color
+    }),
+
+    singleValue: provided => ({
+      ...provided,
+      fontWeight: 500,
+      fontSize: '12px',
     }),
 
     menu: provided => ({
@@ -70,6 +74,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       ...provided,
       top: '50%',
       transform: 'translateY(-50%)',
+      marginRight: '20px',
     }),
     indicatorsContainer: (provided, state) => ({
       ...provided,

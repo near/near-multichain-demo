@@ -14,9 +14,8 @@ const styles = {
         margin: 0,
         padding: 0,
         fontFamily: `'Mona Sans', sans-serif`,
-        bg: '#FFFFFF',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'end',
         justifyContent: 'center',
       },
       '*::placeholder': {
@@ -32,6 +31,7 @@ const colors = {
   '--Sand-Light-2': '#F9F9F8',
   '--Sand-Light-3': '#F3F3F2',
   '--Sand-Light-4': '#EEEEEC',
+  '--Sand-Light-5': '#E9E9E6',
   '--Sand-Light-6': '#E3E3E0',
   '--Sand-Light-8': '#C8C7C1',
   '--Sand-Light-10': '#868682',

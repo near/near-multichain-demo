@@ -2,20 +2,23 @@ const assets = [
   {
     label: 'ETH',
     value: 'eth',
-    iconImage: '/images/ETH.png',
-    networkImage: '/images/ETH-network.png',
+    iconImage: '/images/eth.png',
+    networkImage: '/images/eth-alt.png',
+    networkTooltip: 'Ropsten Ethereum Testnet',
   },
   {
     label: 'BTC',
     value: 'btc',
-    iconImage: '/images/BTC.png',
-    networkImage: '/images/BTC-network.png',
+    iconImage: '/images/btc.png',
+    networkImage: '/images/btc-alt.png',
+    networkTooltip: 'Testnet3 Bitcoin Testnet',
   },
   {
     label: 'BNB',
     value: 'bnb',
-    iconImage: '/images/BNB.png',
-    networkImage: '/images/BSC.png',
+    iconImage: '/images/bnb.png',
+    networkImage: '/images/bsc.png',
+    networkTooltip: 'Chapel BNB Chain Testnet',
   },
 ];
 

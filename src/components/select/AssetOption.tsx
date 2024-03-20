@@ -1,10 +1,11 @@
-import { Flex, Image, Text } from '@chakra-ui/react';
+import { Flex, Image, Text, Tooltip } from '@chakra-ui/react';
 import React from 'react';
 import { components, OptionProps } from 'react-select';
 
 interface AssetOptionInterface {
   iconImage: string;
   networkImage: string;
+  networkTooltip: string;
 }
 
 const AssetOption: React.FC<OptionProps<AssetOptionInterface>> = props => {
@@ -26,7 +27,21 @@ const AssetOption: React.FC<OptionProps<AssetOptionInterface>> = props => {
           </Text>
         </Flex>
         <Flex w="16px" h="16px" rounded="xl" bg="#fff">
-          <Image src={props.data.networkImage} rounded="inherit" />
+          <Tooltip
+            hasArrow
+            label={props.data.networkTooltip}
+            placement="top-end"
+            borderRadius="8px"
+            bg="#ffffff"
+            boxShadow="0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+            fontSize="12px"
+            fontWeight={450}
+            color="--Sand-Light-12"
+            letterSpacing="0.24px"
+            padding="12px 16px"
+          >
+            <Image src={props.data.networkImage} rounded="inherit" />
+          </Tooltip>
         </Flex>
       </Flex>
     </components.Option>
