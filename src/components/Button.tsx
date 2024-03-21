@@ -5,7 +5,7 @@ import {
 import { match } from 'ts-pattern';
 import ButtonSpinner from './ButtonSpinner';
 
-type ButtonProps = ChakraButtonProps & {
+export type ButtonProps = ChakraButtonProps & {
   variant?: 'green' | 'black' | 'red';
 };
 
