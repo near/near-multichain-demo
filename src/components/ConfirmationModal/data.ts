@@ -9,7 +9,7 @@ export const SAMPLE_DOMAIN_KEY_PAYLOAD: DomainKeyPayloadType = {
   address: 'mw5vJDm1Vx0xyBCiMsaT7',
   amount: 0.034,
   fees: [2.3, 2.9],
-  assetType: 'btc',
+  asset: 'btc',
   total: 2.33,
 };
 
@@ -23,5 +23,5 @@ export const SAMPLE_PERSONAL_KEY_PAYLOAD: PersonalKeyPayloadType = {
 };
 
 export const SAMPLE_WRONG_KEY_PAYLOAD: WrongKeyPayloadType = {
-  message: 'This is a confirmation',
+  message: 'We don’t recognize this contract, proceed with caution.',
 };

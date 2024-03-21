@@ -15,7 +15,7 @@ const keyTypes = [
   },
   {
     label: 'Wrong Domain Key',
-    value: 'wrongDomainKey',
+    value: 'wrongKey',
     iconImage: WrongDomainKey,
   },
 ];

@@ -1,5 +1,5 @@
 export type DomainKeyPayloadType = {
-  assetType: string;
+  asset: string;
   domain: string;
   amount: number;
   address: string;
@@ -20,7 +20,7 @@ export type WrongKeyPayloadType = {
   message: string;
 };
 
-export type ConfirmationType = 'DOMAIN_KEY' | 'PERSONAL_KEY' | 'WRONG_KEY';
+export type ConfirmationKeyType = 'domainKey' | 'personalKey' | 'wrongKey';
 export type ConfirmationPayload =
   | DomainKeyPayloadType
   | PersonalKeyPayloadType
@@ -28,13 +28,14 @@ export type ConfirmationPayload =
 
 export type ModalContentsPayload =
   | {
-      confirmationType: 'DOMAIN_KEY';
+      confirmationType: 'domainKey';
       confirmationPayload: DomainKeyPayloadType;
     }
   | {
-      confirmationType: 'PERSONAL_KEY';
+      confirmationType: 'personalKey';
       confirmationPayload: PersonalKeyPayloadType;
     }
   | {
-      confirmationType: 'WRONG_KEY';
+      confirmationType: 'wrongKey';
+      confirmationPayload: WrongKeyPayloadType;
     };
