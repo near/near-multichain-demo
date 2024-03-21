@@ -54,8 +54,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
     singleValue: provided => ({
       ...provided,
-      fontWeight: 500,
-      fontSize: '12px',
+      fontWeight: 450,
+      fontSize: '16px',
     }),
 
     menu: provided => ({
@@ -74,7 +74,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       ...provided,
       top: '50%',
       transform: 'translateY(-50%)',
-      marginRight: '20px',
     }),
     indicatorsContainer: (provided, state) => ({
       ...provided,
