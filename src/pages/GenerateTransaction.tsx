@@ -17,15 +17,22 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
-
 import CopySvg from '@/assets/Copy.svg';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import { ModalManager as ConfirmationModalModalManager } from '@/components/ConfirmationModal/ConfirmationModal';
-import ModalContents from '@/components/ConfirmationModal/ModalContents';
+import {
+  SAMPLE_DOMAIN_KEY_PAYLOAD,
+  SAMPLE_PERSONAL_KEY_PAYLOAD,
+  SAMPLE_WRONG_KEY_PAYLOAD,
+} from '@/components/ConfirmationModal/data';
+import DomainKeyConfirmation from '@/components/ConfirmationModal/DomainKeyConfirmation';
+import PersonalKeyConfirmation from '@/components/ConfirmationModal/PersonalKeyConfirmation';
+import { ConfirmationPayload } from '@/components/ConfirmationModal/types';
+import WarningConfirmation from '@/components/ConfirmationModal/WarningConfirmation';
 import GenerateAddress from '@/components/GenerateAddress';
 import PageTitle from '@/components/PageTitle';
 import PlusCircle from '@/components/PlusCircle';
@@ -39,6 +46,12 @@ const helperTextProps = {
   lineHeight: '140%',
   letterSpacing: '0.24px',
   my: '2px',
+};
+
+const modalContentsKeyMap: { [key: string]: unknown } = {
+  domainKey: DomainKeyConfirmation,
+  personalKey: PersonalKeyConfirmation,
+  wrongKey: WarningConfirmation,
 };
 
 const getComputedInputStyles = (
@@ -64,7 +77,7 @@ const schema = yup.object().shape({
       label: yup.string().required('Key type is required'),
     })
     .required('This is required'),
-  asset: yup
+  assetType: yup
     .object()
     .shape({
       value: yup.string().required('Please select an asset'),
@@ -87,18 +100,54 @@ const GenerateTransaction = () => {
     handleSubmit,
     formState: { errors = {}, isValid },
     control,
-    watch,
+    getValues,
   } = useForm({
     mode: 'onSubmit',
     resolver: yupResolver(schema),
     defaultValues: {
       keyType: defaultKeyType,
-      asset: defaultAsset,
+      assetType: defaultAsset,
       amount: 0.01,
       address: 'mw5vJDm1Vx0xyBCiMsaT7',
     },
   });
-  const formValues = watch();
+  const formValues = getValues();
+
+  const ModalContents = modalContentsKeyMap[
+    formValues.keyType!.value
+  ] as React.FC<{ payload: ConfirmationPayload }>;
+
+  const confirmationPayload = useMemo(() => {
+    if (!formValues || !formValues.keyType || !formValues.assetType)
+      return null;
+    const { keyType, amount, address, assetType } = formValues;
+    let payload: Record<string, unknown> = {
+      amount,
+      address,
+      asset: assetType.value,
+    };
+
+    switch (keyType.value) {
+      case 'domainKey':
+        payload.domain = SAMPLE_DOMAIN_KEY_PAYLOAD.domain;
+        payload.fees = SAMPLE_DOMAIN_KEY_PAYLOAD.fees;
+        payload.total = SAMPLE_DOMAIN_KEY_PAYLOAD.total;
+        break;
+      case 'personalKey':
+        payload.domain = SAMPLE_PERSONAL_KEY_PAYLOAD.domain;
+        payload.fees = SAMPLE_PERSONAL_KEY_PAYLOAD.fees;
+        payload.message = SAMPLE_PERSONAL_KEY_PAYLOAD.message;
+        delete payload.total;
+        payload.email = SAMPLE_PERSONAL_KEY_PAYLOAD.email;
+        payload.paymentMedium = SAMPLE_PERSONAL_KEY_PAYLOAD.paymentMedium;
+        break;
+      default:
+        payload = { message: SAMPLE_WRONG_KEY_PAYLOAD.message };
+        break;
+    }
+
+    return payload as ConfirmationPayload;
+  }, [formValues]);
 
   const keyTypeAssistiveText = useMemo(() => {
     const selected = formValues?.keyType?.value;
@@ -107,10 +156,10 @@ const GenerateTransaction = () => {
   }, [formValues.keyType]);
 
   const assetAssistiveText = useMemo(() => {
-    const selected = formValues?.asset?.value;
+    const selected = formValues?.assetType?.value;
     if (selected) return associatedNetwork[selected];
     return null;
-  }, [formValues.asset]);
+  }, [formValues?.assetType?.value]);
 
   const toggleAmountFocus = () => setIsAmountInputFocused(focused => !focused);
   const toggleAddressFocus = () =>
@@ -153,7 +202,7 @@ const GenerateTransaction = () => {
                 Asset
               </FormLabel>
               <Controller
-                name="asset"
+                name="assetType"
                 control={control}
                 render={({ field }) => (
                   <Select
@@ -172,7 +221,7 @@ const GenerateTransaction = () => {
               >
                 {assetAssistiveText}
               </FormHelperText>
-              <FormErrorMessage>{errors?.asset?.message}</FormErrorMessage>
+              <FormErrorMessage>{errors?.assetType?.message}</FormErrorMessage>
             </FormControl>
             <IconButton
               h="40px"
@@ -246,10 +295,19 @@ const GenerateTransaction = () => {
             <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
           </FormControl>
           <ConfirmationModalModalManager
-            children={<ModalContents confirmationType="WRONG_KEY" />}
+            ctaButtonProps={
+              formValues.keyType!.value === 'wrongKey'
+                ? { variant: 'red' }
+                : undefined
+            }
+            children={
+              <ModalContents
+                payload={confirmationPayload as ConfirmationPayload}
+              />
+            }
             triggerFn={({ trigger }) => (
               <Button
-                onClick={() => trigger()}
+                onClick={() => isValid && trigger()}
                 w="full"
                 variant="black"
                 type="submit"
