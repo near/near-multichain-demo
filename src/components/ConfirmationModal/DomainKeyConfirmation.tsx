@@ -1,31 +1,9 @@
-import { Flex, Heading, Image, List, ListItem, Text } from '@chakra-ui/react';
+import { Flex, Heading, Image, List, Text } from '@chakra-ui/react';
 import React from 'react';
+import ListItemWithFlex from './ListItemWithFlex';
 import { DomainKeyPayloadType } from './types';
 import { formatCurrencyInUSD } from './utils';
 import assets from '@/data/assets';
-
-const ListItemWithFlex = ({
-  children,
-  borderTopRadius,
-  borderBottomRadius,
-}: {
-  children: React.ReactNode;
-  borderTopRadius?: string;
-  borderBottomRadius?: string;
-}) => (
-  <ListItem
-    as={Flex}
-    p="16px"
-    alignItems="center"
-    justifyContent="space-between"
-    border="1px solid"
-    borderColor="--Sand-Light-5"
-    borderTopRadius={borderTopRadius}
-    borderBottomRadius={borderBottomRadius}
-  >
-    {children}
-  </ListItem>
-);
 
 type DomainConfirmationProps = {
   payload: DomainKeyPayloadType;
@@ -34,14 +12,14 @@ type DomainConfirmationProps = {
 const DomainKeyConfirmation: React.FC<DomainConfirmationProps> = ({
   payload,
 }) => {
-  const { assetType, domain, amount, address, fees, total } = payload;
-  const asset = assets.find(item => item.value === assetType);
+  const { asset, domain, amount, address, fees, total } = payload;
+  const assetObject = assets.find(item => item.value === asset);
 
   return (
     <Flex flexDir="column" align="center">
-      <Image src={asset?.networkImage} h="30px" w="30px" />
+      <Image src={assetObject?.networkImage} h="30px" w="30px" />
       <Heading as="h4" size="md" mt="20px" fontSize="24px">
-        Send {asset?.label}?
+        Send {assetObject?.label}?
       </Heading>
       <Flex
         align="center"
@@ -65,9 +43,9 @@ const DomainKeyConfirmation: React.FC<DomainConfirmationProps> = ({
             Send
           </Text>
           <Flex h="full" align="center" gap={2}>
-            <Image src={asset?.networkImage} h="12px" w="12px" />
+            <Image src={assetObject?.iconImage} h="12px" w="12px" />
             <Text fontWeight={600} fontSize="14px" lineHeight="150%">
-              {amount} {asset?.label}
+              {amount} {assetObject?.label}
             </Text>
           </Flex>
         </ListItemWithFlex>

@@ -56,9 +56,12 @@ const PersonalKeyConfirmation: React.FC<DomainConfirmationProps> = ({
           <Text color="--Sand-Light-11" fontSize="14px" fontWeight={450}>
             To
           </Text>
-          <Text fontWeight={600} fontSize="14px">
-            {address}
-          </Text>
+          <Flex align="center" gap="6px">
+            <Image src="/images/ref.png" h="16px" w="16px" />
+            <Text fontWeight={600} fontSize="14px">
+              {domain}
+            </Text>
+          </Flex>
         </ListItemWithFlex>
       </List>
       <List bg="--Sand-Light-1" borderRadius="6px" w="full">
@@ -84,6 +87,12 @@ const PersonalKeyConfirmation: React.FC<DomainConfirmationProps> = ({
               control: (provided, state) => ({
                 ...provided,
                 borderRadius: '50px',
+              }),
+              singleValue: (provided, state) => ({
+                ...provided,
+                fontSize: '12px',
+                fontWeight: 500,
+                fontFamily: 'FK Grotesk Variable',
               }),
             }}
           />
