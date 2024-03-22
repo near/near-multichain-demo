@@ -3,33 +3,19 @@ import {
   FormErrorMessage,
   Input,
   FormHelperText,
-  Flex,
-  Button as ChakraButton,
-  InputProps,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState, RefObject, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import * as process from 'process';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import PageTitle from '@/components/PageTitle';
-import useVerificationCode from '@/hooks/useVerificationCode';
-import useWalletSelector from '@/hooks/useWalletSelector';
-
-const steps = {
-  GET_STARTED: 'GET_STARTED',
-  VERIFY_EMAIL: 'VERIFY_EMAIL',
-};
 
 const schema = yup.object().shape({
   email: yup.string().email().required('This is required'),
 });
 
 const CreateAccount = () => {
-  const selector = useWalletSelector();
-
   const {
     register,
     handleSubmit,
@@ -40,20 +26,7 @@ const CreateAccount = () => {
     resolver: yupResolver(schema),
   });
 
-  console.log('errors ', errors);
-  console.log('process.env ', process.env.VITE_DEMO_ACCOUNT_ID);
-
-  const onSubmitForm = (values: { email: any }) => {
-    selector
-      .then((selector: any) => selector.wallet('fast-auth-wallet'))
-      .then((fastAuthWallet: any) =>
-        fastAuthWallet.signIn({
-          contractId: 'social.near',
-          email: values.email,
-          isRecovery: false,
-        })
-      );
-  };
+  const onSubmitForm = (values: { email: any }) => {};
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
