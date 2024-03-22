@@ -11,7 +11,7 @@ const CreateAccount = () => {
   const handleCreateAccount = () => requestAuthentication(true);
 
   return (
-    <Card gap="35px">
+    <Card gap="35px" pt="25px">
       <Button w="full" onClick={handleSignIn}>
         Login
       </Button>
