@@ -15,6 +15,8 @@ import {
   NumberIncrementStepper,
   Box,
   useClipboard,
+  useToast,
+  Text,
 } from '@chakra-ui/react';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -35,6 +37,7 @@ import Card from '@/components/Card';
 import PageTitle from '@/components/PageTitle';
 import PlusCircle from '@/components/PlusCircle';
 import { Select, KeyTypeOption, AssetOption } from '@/components/select';
+import ToastComponent from '@/components/ToastComponent';
 import assets from '@/data/assets';
 import keyTypes from '@/data/keyTypes';
 import {
@@ -89,13 +92,13 @@ const GenerateTransaction = () => {
   const [derivedAddress, setDerivedAddress] = useState('');
   const ref = useRef<HTMLDivElement | null>(null);
   const { onCopy, setValue: setCopyValue, hasCopied } = useClipboard('');
+  const toast = useToast();
 
   const {
     register,
     handleSubmit,
     formState: { errors = {}, isValid },
     control,
-    getValues,
     watch,
   } = useForm({
     mode: 'onSubmit',
@@ -107,7 +110,6 @@ const GenerateTransaction = () => {
       //address: 'mw5vJDm1Vx0xyBCiMsaT7',
     },
   });
-  const formValues = getValues();
   const assetType = watch('assetType');
   const keyType = watch('keyType');
 
@@ -145,18 +147,18 @@ const GenerateTransaction = () => {
       const address =
         assetType.value === 0
           ? await fetchDerivedBTCAddress(
-            'david.near',
+              'david.near',
               derivationPath!,
               bitcoin.networks.testnet,
               'testnet',
               'multichain-testnet-2.testnet'
-          )
+            )
           : await fetchDerivedEVMAddress(
-            'david.near',
+              'david.near',
               derivationPath!,
               'testnet',
               'multichain-testnet-2.testnet'
-          );
+            );
       setDerivedAddress(address);
       setCopyValue(address);
     } catch (e) {
@@ -174,6 +176,18 @@ const GenerateTransaction = () => {
   }, [assetType, fetchDerivedAddress, keyType]);
 
   const toggleAmountFocus = () => setIsAmountInputFocused(focused => !focused);
+  const handleCopyClick = () => {
+    onCopy();
+    toast({
+      render: (): React.ReactNode => (
+        <ToastComponent>
+          <Text color="--Sand-Light-12" fontSize="13px" fontWeight={500}>
+            Address copied to clipboard
+          </Text>
+        </ToastComponent>
+      ),
+    });
+  };
 
   const onSubmitForm = (values: any) => {
     console.log('values ', values);
@@ -246,7 +260,8 @@ const GenerateTransaction = () => {
               aria-label="Copy"
               icon={<Image src={CopySvg} />}
               mb="1px"
-              onClick={onCopy}
+              onClick={handleCopyClick}
+              isDisabled={!derivedAddress}
             />
           </Flex>
           <FormControl>
