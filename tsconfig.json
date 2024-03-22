@@ -21,10 +21,9 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "types": ["vite/client", "vitest"]
+    "types": ["vite/client", "vitest"],
+    "typeRoots": ["./node_modules/@types", "./"]
   },
-  "files": [],
-  "include": [],
   "references": [
     {
       "path": "./tsconfig.app.json"
@@ -34,5 +33,6 @@
     }
   ],
   "compileOnSave": false,
-  "exclude": ["node_modules", "tmp"]
+  "exclude": ["node_modules", "tmp"],
+  "include": ["src/**/*.ts", "global.d.ts"]
 }

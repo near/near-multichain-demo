@@ -11,10 +11,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState, RefObject, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import * as process from 'process';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import PageTitle from '@/components/PageTitle';
 import useVerificationCode from '@/hooks/useVerificationCode';
+import useWalletSelector from '@/hooks/useWalletSelector';
 
 const steps = {
   GET_STARTED: 'GET_STARTED',
@@ -23,140 +25,63 @@ const steps = {
 
 const schema = yup.object().shape({
   email: yup.string().email().required('This is required'),
-  code: yup
-    .array()
-    .required('This is required')
-    .length(6)
-    .of(yup.string().length(1)),
 });
 
 const CreateAccount = () => {
-  const [currentStep, setCurrentStep] = useState(steps.GET_STARTED);
-
-  const { inputRefs, onInputChange, code, onPaste } = useVerificationCode();
-
-  console.log('code ', code);
+  const selector = useWalletSelector();
 
   const {
     register,
     handleSubmit,
     formState: { errors = {} },
     watch,
-    setValue,
   } = useForm({
     mode: 'all',
     resolver: yupResolver(schema),
   });
 
-  const formValues = watch();
+  console.log('errors ', errors);
+  console.log('process.env ', process.env.VITE_DEMO_ACCOUNT_ID);
 
-  useEffect(() => {
-    setValue('code', code);
-  }, [code, setValue]);
-
-  const onSubmitForm = () => {
-    setCurrentStep(steps.VERIFY_EMAIL);
-  };
-
-  const commonInputProps: InputProps = {
-    height: '40px',
-    width: '40px',
-    onPaste,
+  const onSubmitForm = (values: { email: any }) => {
+    selector
+      .then((selector: any) => selector.wallet('fast-auth-wallet'))
+      .then((fastAuthWallet: any) =>
+        fastAuthWallet.signIn({
+          contractId: 'social.near',
+          email: values.email,
+          isRecovery: false,
+        })
+      );
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
       <Card gap="32px">
-        {currentStep === steps.GET_STARTED && (
-          <>
-            <PageTitle>Get Started</PageTitle>
-            <FormControl>
-              <Input placeholder="name@youremail.com" {...register('email')} />
-              <FormHelperText
-                fontSize="12px"
-                fontWeight={450}
-                lineHeight="140%"
-                color="--Violet-Light-8"
-                mt="1px"
-              >
-                Enter your email
-              </FormHelperText>
-              <FormErrorMessage>
-                {errors?.email?.message && errors.email.message.toString()}
-              </FormErrorMessage>
-            </FormControl>{' '}
-          </>
-        )}
-
-        {currentStep === steps.VERIFY_EMAIL && (
-          <>
-            <PageTitle>Check Your Email</PageTitle>
-            <FormControl w="90%" mx="auto">
-              <Flex mb={2} justify="space-around">
-                <Flex justify="space-between" gap={1}>
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <Input
-                      key={index}
-                      name={`codes.${index}`}
-                      ref={
-                        inputRefs[
-                          index
-                        ] as unknown as RefObject<HTMLInputElement>
-                      }
-                      onChange={e => onInputChange(index, e)}
-                      value={formValues.code?.[index]}
-                      {...commonInputProps}
-                    />
-                  ))}
-                </Flex>
-                <Flex justify="space-between" gap={1}>
-                  {Array.from({ length: 3 }).map((_, _index) => {
-                    // Push the three inputs forward, see design
-                    const index = _index + 3;
-                    return (
-                      <Input
-                        key={index}
-                        name={`codes.${index}`}
-                        ref={
-                          inputRefs[
-                            index
-                          ] as unknown as RefObject<HTMLInputElement>
-                        }
-                        onChange={e => onInputChange(index, e)}
-                        value={formValues.code?.[index]}
-                        {...commonInputProps}
-                      />
-                    );
-                  })}
-                </Flex>
-              </Flex>
-              <Flex align="center" gap={1} mt={1}>
-                <FormHelperText
-                  fontSize="12px"
-                  fontWeight={450}
-                  lineHeight="140%"
-                  color="--Sand-Light-11"
-                  mt={0}
-                >
-                  Need a new code?
-                </FormHelperText>
-                <ChakraButton
-                  color="--Violet-Light-8"
-                  variant="link"
-                  fontSize="12px"
-                  fontWeight={450}
-                >
-                  Resend Email
-                </ChakraButton>
-              </Flex>
-              <FormErrorMessage>
-                {errors?.email?.message && errors.email.message.toString()}
-              </FormErrorMessage>
-            </FormControl>{' '}
-          </>
-        )}
-
-        <Button w="full">Continue</Button>
+        <PageTitle>Get Started</PageTitle>
+        <FormControl>
+          <Input
+            placeholder="name@youremail.com"
+            isInvalid={!!errors?.email?.message}
+            errorBorderColor="--Red-Light-9"
+            {...register('email')}
+          />
+          <FormHelperText
+            fontSize="12px"
+            fontWeight={450}
+            lineHeight="140%"
+            color="--Violet-Light-8"
+            mt="1px"
+          >
+            Enter your email
+          </FormHelperText>
+          <FormErrorMessage>
+            {errors?.email?.message && errors.email.message.toString()}
+          </FormErrorMessage>
+        </FormControl>{' '}
+        <Button w="full" type="submit">
+          Continue
+        </Button>
       </Card>
     </form>
   );

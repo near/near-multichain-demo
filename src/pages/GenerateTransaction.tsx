@@ -9,36 +9,38 @@ import {
   NumberInputStepper,
   InputGroup,
   Input,
-  InputRightElement,
   IconButton,
   Image,
   ChakraProps,
   NumberIncrementStepper,
   Box,
+  useClipboard,
 } from '@chakra-ui/react';
+
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useMemo, useRef, useState } from 'react';
+import * as bitcoin from 'bitcoinjs-lib';
+import canonicalize from 'canonicalize';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import CopySvg from '@/assets/Copy.svg';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
-import { ModalManager as ConfirmationModalModalManager } from '@/components/ConfirmationModal/ConfirmationModal';
-import {
-  SAMPLE_DOMAIN_KEY_PAYLOAD,
-  SAMPLE_PERSONAL_KEY_PAYLOAD,
-  SAMPLE_WRONG_KEY_PAYLOAD,
-} from '@/components/ConfirmationModal/data';
-import DomainKeyConfirmation from '@/components/ConfirmationModal/DomainKeyConfirmation';
-import PersonalKeyConfirmation from '@/components/ConfirmationModal/PersonalKeyConfirmation';
-import { ConfirmationPayload } from '@/components/ConfirmationModal/types';
-import WarningConfirmation from '@/components/ConfirmationModal/WarningConfirmation';
-import GenerateAddress from '@/components/GenerateAddress';
 import PageTitle from '@/components/PageTitle';
 import PlusCircle from '@/components/PlusCircle';
 import { Select, KeyTypeOption, AssetOption } from '@/components/select';
-import assets, { associatedNetwork } from '@/data/assets';
-import keyTypes, { signerAppBehavior } from '@/data/keyTypes';
+import assets from '@/data/assets';
+import keyTypes from '@/data/keyTypes';
+import {
+  fetchDerivedBTCAddress,
+  fetchDerivedEVMAddress,
+} from '@/utils/multi-chain/multiChain';
 
 const helperTextProps = {
   fontSize: '12px',
@@ -46,12 +48,6 @@ const helperTextProps = {
   lineHeight: '140%',
   letterSpacing: '0.24px',
   my: '2px',
-};
-
-const modalContentsKeyMap: { [key: string]: unknown } = {
-  domainKey: DomainKeyConfirmation,
-  personalKey: PersonalKeyConfirmation,
-  wrongKey: WarningConfirmation,
 };
 
 const getComputedInputStyles = (
@@ -80,7 +76,7 @@ const schema = yup.object().shape({
   assetType: yup
     .object()
     .shape({
-      value: yup.string().required('Please select an asset'),
+      value: yup.number().required('Please select an asset'),
       label: yup.string().required('Please select an asset'),
     })
     .required('This is required'),
@@ -88,82 +84,96 @@ const schema = yup.object().shape({
   address: yup.string().required('This is required'),
 });
 
-const defaultKeyType = keyTypes.find(keyType => keyType.value === 'domainKey');
-const defaultAsset = assets.find(asset => asset.value === 'eth');
-
 const GenerateTransaction = () => {
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
-  const [isAddressInputFocused, setIsAddressInputFocused] = useState(false);
+  const [derivedAddress, setDerivedAddress] = useState('');
   const ref = useRef<HTMLDivElement | null>(null);
+  const { onCopy, setValue: setCopyValue, hasCopied } = useClipboard('');
+
   const {
     register,
     handleSubmit,
     formState: { errors = {}, isValid },
     control,
     getValues,
+    watch,
   } = useForm({
     mode: 'onSubmit',
     resolver: yupResolver(schema),
     defaultValues: {
-      keyType: defaultKeyType,
-      assetType: defaultAsset,
+      keyType: keyTypes[0],
+      assetType: assets[0],
       amount: 0.01,
-      address: 'mw5vJDm1Vx0xyBCiMsaT7',
+      //address: 'mw5vJDm1Vx0xyBCiMsaT7',
     },
   });
   const formValues = getValues();
+  const assetType = watch('assetType');
+  const keyType = watch('keyType');
 
-  const ModalContents = modalContentsKeyMap[
-    formValues.keyType!.value
-  ] as React.FC<{ payload: ConfirmationPayload }>;
+  const selectedAsset = useMemo(
+    () =>
+      assets.find(
+        ({ label, value }) =>
+          label === assetType.label && value === assetType.value
+      ),
+    [assetType]
+  );
 
-  const confirmationPayload = useMemo(() => {
-    if (!formValues || !formValues.keyType || !formValues.assetType)
-      return null;
-    const { keyType, amount, address, assetType } = formValues;
-    let payload: Record<string, unknown> = {
-      amount,
-      address,
-      asset: assetType.value,
-    };
+  const selectedKey = useMemo(
+    () =>
+      keyTypes.find(
+        ({ label, value }) => label === keyType.label && value === keyType.value
+      ),
+    [keyType]
+  );
 
-    switch (keyType.value) {
-      case 'domainKey':
-        payload.domain = SAMPLE_DOMAIN_KEY_PAYLOAD.domain;
-        payload.fees = SAMPLE_DOMAIN_KEY_PAYLOAD.fees;
-        payload.total = SAMPLE_DOMAIN_KEY_PAYLOAD.total;
-        break;
-      case 'personalKey':
-        payload.domain = SAMPLE_PERSONAL_KEY_PAYLOAD.domain;
-        payload.fees = SAMPLE_PERSONAL_KEY_PAYLOAD.fees;
-        payload.message = SAMPLE_PERSONAL_KEY_PAYLOAD.message;
-        delete payload.total;
-        payload.email = SAMPLE_PERSONAL_KEY_PAYLOAD.email;
-        payload.paymentMedium = SAMPLE_PERSONAL_KEY_PAYLOAD.paymentMedium;
-        break;
-      default:
-        payload = { message: SAMPLE_WRONG_KEY_PAYLOAD.message };
-        break;
+  const fetchDerivedAddress = useCallback(async () => {
+    try {
+      const payload: Record<string, unknown> = {
+        chain: assetType.value,
+      };
+      if (keyType.value === 'domainKey') {
+        payload.domain = window.location.origin;
+      } else if (keyType.value === 'wrongKey') {
+        payload.domain = 'https://app.unknowndomain.com';
+      } else {
+        delete payload.domain;
+      }
+
+      const derivationPath = canonicalize(payload);
+      const address =
+        assetType.value === 0
+          ? await fetchDerivedBTCAddress(
+            'david.near',
+              derivationPath!,
+              bitcoin.networks.testnet,
+              'testnet',
+              'multichain-testnet-2.testnet'
+          )
+          : await fetchDerivedEVMAddress(
+            'david.near',
+              derivationPath!,
+              'testnet',
+              'multichain-testnet-2.testnet'
+          );
+      setDerivedAddress(address);
+      setCopyValue(address);
+    } catch (e) {
+      console.log('Error fetching derived address ', e);
     }
+  }, [assetType.value, keyType.value, setCopyValue]);
 
-    return payload as ConfirmationPayload;
-  }, [formValues]);
-
-  const keyTypeAssistiveText = useMemo(() => {
-    const selected = formValues?.keyType?.value;
-    if (selected) return signerAppBehavior[selected];
-    return null;
-  }, [formValues.keyType]);
-
-  const assetAssistiveText = useMemo(() => {
-    const selected = formValues?.assetType?.value;
-    if (selected) return associatedNetwork[selected];
-    return null;
-  }, [formValues?.assetType?.value]);
+  useEffect(() => {
+    if (!assetType || !keyType) return;
+    fetchDerivedAddress();
+    // Subscribe to changes in assetType and keyType
+    return () => {
+      // Cleanup or unsubscribe if needed
+    };
+  }, [assetType, fetchDerivedAddress, keyType]);
 
   const toggleAmountFocus = () => setIsAmountInputFocused(focused => !focused);
-  const toggleAddressFocus = () =>
-    setIsAddressInputFocused(focused => !focused);
 
   const onSubmitForm = (values: any) => {
     console.log('values ', values);
@@ -192,7 +202,7 @@ const GenerateTransaction = () => {
               )}
             />
             <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
-              {keyTypeAssistiveText}
+              {selectedKey?.assistiveMessage}
             </FormHelperText>
             <FormErrorMessage>{errors?.keyType?.message}</FormErrorMessage>
           </FormControl>
@@ -219,7 +229,7 @@ const GenerateTransaction = () => {
                 color="--Sand-Light-11"
                 mt={1}
               >
-                {assetAssistiveText}
+                {selectedAsset?.networkTooltip}
               </FormHelperText>
               <FormErrorMessage>{errors?.assetType?.message}</FormErrorMessage>
             </FormControl>
@@ -235,6 +245,8 @@ const GenerateTransaction = () => {
               colorScheme="blue"
               aria-label="Copy"
               icon={<Image src={CopySvg} />}
+              mb="1px"
+              onClick={onCopy}
             />
           </Flex>
           <FormControl>
@@ -279,44 +291,17 @@ const GenerateTransaction = () => {
             <InputGroup>
               <Input
                 {...register('address')}
-                placeholder="ETH address"
-                onFocus={toggleAddressFocus}
-                onBlur={toggleAddressFocus}
+                placeholder={`${selectedAsset?.code} address`}
                 border="1px solid"
                 bg="--Sand-Light-1"
                 {...getComputedInputStyles(errors, 'address')}
-                pr="40px"
               />
-
-              <InputRightElement>
-                <GenerateAddress isActive={isAddressInputFocused} />
-              </InputRightElement>
             </InputGroup>
             <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
           </FormControl>
-          <ConfirmationModalModalManager
-            ctaButtonProps={
-              formValues.keyType!.value === 'wrongKey'
-                ? { variant: 'red' }
-                : undefined
-            }
-            children={
-              <ModalContents
-                payload={confirmationPayload as ConfirmationPayload}
-              />
-            }
-            triggerFn={({ trigger }) => (
-              <Button
-                onClick={() => isValid && trigger()}
-                w="full"
-                variant="black"
-                type="submit"
-                isDisabled={!isValid}
-              >
-                Continue
-              </Button>
-            )}
-          />
+          <Button w="full" variant="black" type="submit" isDisabled={!isValid}>
+            Continue
+          </Button>
         </Card>
       </form>
     </Box>
