@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { MainLayout } from '@/components/layout';
-import GenerateTransaction from '@/pages/GenerateTransaction';
+// import GenerateTransaction from '@/pages/GenerateTransaction';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/NotFound';
 
@@ -13,10 +13,10 @@ const App: React.FC = () => (
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />}></Route>
-          <Route
+          {/* <Route
             path="generate-transaction"
             element={<GenerateTransaction />}
-          ></Route>
+          ></Route> */}
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

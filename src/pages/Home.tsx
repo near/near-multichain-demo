@@ -1,10 +1,19 @@
 import { Flex, Box, Text } from '@chakra-ui/react';
+import { useEffect } from 'react';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import { useSignInRedirect } from '@/hooks/useSignInRedirect';
 
 const CreateAccount = () => {
-  const { requestAuthentication } = useSignInRedirect();
+  const { requestAuthentication, getAccountId } = useSignInRedirect();
+
+  useEffect(() => {
+    const init = async () => {
+      console.log(await getAccountId());
+    };
+
+    init();
+  }, [getAccountId]);
 
   const handleSignIn = () => requestAuthentication();
 
