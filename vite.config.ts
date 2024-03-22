@@ -1,11 +1,10 @@
 /// <reference types='vitest' />
-import GlobalPolyFill from '@esbuild-plugins/node-globals-polyfill';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
-import inject from '@rollup/plugin-inject';
 import react from '@vitejs/plugin-react';
 
 import { defineConfig, loadEnv } from 'vite';
 import EnvironmentPlugin from 'vite-plugin-environment';
+import svgr from 'vite-plugin-svgr';
 import path from 'path';
 
 export default defineConfig(({ mode }) => {
@@ -18,9 +17,7 @@ export default defineConfig(({ mode }) => {
   return {
     root: __dirname,
     cacheDir: './node_modules/.vite/.',
-    define: {
-      ...defineEnv,
-    },
+    define: defineEnv,
     server: {
       port: 4200,
       host: 'localhost',
@@ -31,6 +28,7 @@ export default defineConfig(({ mode }) => {
       host: 'localhost',
     },
     plugins: [
+      svgr(),
       react(),
       nxViteTsPaths(),
       EnvironmentPlugin('all', { prefix: 'VITE_' }),

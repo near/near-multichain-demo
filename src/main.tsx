@@ -11,7 +11,16 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <StrictMode>
-    <ChakraProvider theme={theme}>
+    <ChakraProvider
+      theme={theme}
+      toastOptions={{
+        defaultOptions: {
+          position: 'bottom',
+          duration: 3000,
+          isClosable: true,
+        },
+      }}
+    >
       <App />
     </ChakraProvider>
   </StrictMode>
