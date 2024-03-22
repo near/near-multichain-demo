@@ -1,65 +1,54 @@
-import {
-  setupWalletSelector,
-  WalletSelector,
-} from '@near-wallet-selector/core';
+import { setupWalletSelector } from '@near-wallet-selector/core';
 import { setupFastAuthWallet } from 'near-fastauth-wallet';
 import { useCallback, useEffect, useState } from 'react';
 
 const networkId = (import.meta as any).env.VITE_NETWORK_ID;
 
 export function useSignInRedirect() {
-  const [selectorInstance, setSelectorInstance] = useState<WalletSelector>();
+  const [fastAuthWallet, setFastAuthWallet] = useState<any | null>(null);
 
   useEffect(() => {
-    const init = async () => {
-      const selectorInstance = await setupWalletSelector({
+    async function init() {
+      const relayerUrl =
+        networkId === 'testnet'
+          ? 'https://corsproxy.io/?https://near-relayer-testnet.api.pagoda.co/relay'
+          : 'https://near-relayer-mainnet.api.pagoda.co/relay';
+
+      const selector = await setupWalletSelector({
         network: networkId,
         modules: [
           setupFastAuthWallet({
-            relayerUrl:
-              networkId === 'testnet'
-                ? 'https://corsproxy.io/?https://near-relayer-testnet.api.pagoda.co/relay'
-                : 'https://near-relayer-mainnet.api.pagoda.co/relay',
+            relayerUrl,
             walletUrl: 'http://localhost:3000',
           }),
         ],
       });
-      setSelectorInstance(selectorInstance);
-    };
+
+      const fastAuthInstance = await selector.wallet('fast-auth-wallet');
+      setFastAuthWallet(fastAuthInstance);
+    }
 
     init();
   }, []);
 
-  const getAccountId = async () => {
-    if (!selectorInstance) return;
+  const getAccountId = useCallback(async (): Promise<string | null> => {
+    if (!fastAuthWallet) throw new Error('FastAuth wallet is not available.');
 
-    const fastAuthWallet = (await selectorInstance.wallet(
-      'fast-auth-wallet'
-    )) as any;
+    const accounts = await fastAuthWallet.getAccounts();
+    return accounts[0]?.accountId || null;
+  }, [fastAuthWallet]);
 
-    const { accountId } = (await fastAuthWallet.getAccounts())[0];
-
-    return accountId;
-  };
-
-  const signOut = async () => {
-    if (!selectorInstance) return;
-
-    const fastAuthWallet = (await selectorInstance.wallet(
-      'fast-auth-wallet'
-    )) as any;
+  const signOut = useCallback(async (): Promise<void> => {
+    if (!fastAuthWallet) return;
 
     return fastAuthWallet.signOut();
-  };
+  }, [fastAuthWallet]);
 
   const requestAuthentication = useCallback(
-    async (createAccount = false) => {
-      if (!selectorInstance) return;
+    async (createAccount = false): Promise<void> => {
+      if (!fastAuthWallet) return;
 
       try {
-        const fastAuthWallet = (await selectorInstance.wallet(
-          'fast-auth-wallet'
-        )) as any;
         await fastAuthWallet.signIn({
           contractId: 'near-social',
           isRecovery: !createAccount,
@@ -68,12 +57,8 @@ export function useSignInRedirect() {
         console.error('Error during authentication:', error);
       }
     },
-    [selectorInstance]
+    [fastAuthWallet]
   );
 
-  return {
-    requestAuthentication,
-    getAccountId,
-    signOut,
-  };
+  return { requestAuthentication, getAccountId, signOut };
 }
