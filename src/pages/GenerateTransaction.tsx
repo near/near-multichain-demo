@@ -31,7 +31,6 @@ import React, {
 } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
-import CopySvg from '@/assets/Copy.svg';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import PageTitle from '@/components/PageTitle';
@@ -147,18 +146,18 @@ const GenerateTransaction = () => {
       const address =
         assetType.value === 0
           ? await fetchDerivedBTCAddress(
-              'david.near',
+            'david.near',
               derivationPath!,
               bitcoin.networks.testnet,
               'testnet',
               'multichain-testnet-2.testnet'
-            )
+          )
           : await fetchDerivedEVMAddress(
-              'david.near',
+            'david.near',
               derivationPath!,
               'testnet',
               'multichain-testnet-2.testnet'
-            );
+          );
       setDerivedAddress(address);
       setCopyValue(address);
     } catch (e) {
@@ -258,7 +257,7 @@ const GenerateTransaction = () => {
               borderRadius="50px"
               colorScheme="blue"
               aria-label="Copy"
-              icon={<Image src={CopySvg} />}
+              icon={<Image src="/images/Copy.svg" />}
               mb="1px"
               onClick={handleCopyClick}
               isDisabled={!derivedAddress}

@@ -1,24 +1,20 @@
-import DomainKey from '@/assets/DomainKey.svg';
-import PersonalKey from '@/assets/PersonalKey.svg';
-import WrongDomainKey from '@/assets/WrongDomainKey.svg';
-
 const keyTypes = [
   {
     label: 'Domain Key',
     value: 'domainKey',
-    iconImage: DomainKey,
+    iconImage: '/images/DomainKey.svg',
     assistiveMessage: 'No confirmation required',
   },
   {
     label: 'Personal Key',
     value: 'personalKey',
-    iconImage: PersonalKey,
+    iconImage: '/images/PersonalKey.svg',
     assistiveMessage: 'Request for confirmation',
   },
   {
     label: 'Wrong Domain Key',
     value: 'wrongKey',
-    iconImage: WrongDomainKey,
+    iconImage: '/images/WrongDomainKey.svg',
     assistiveMessage: 'Warning message before confirming',
   },
 ];

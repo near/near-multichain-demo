@@ -6,7 +6,6 @@ import {
   Image,
   Heading,
 } from '@chakra-ui/react';
-import SignOutSvg from '@/assets/SignOut.svg';
 
 const NavBar = () => (
   <Flex align="center" p="24px 0" alignSelf="stretch" justify="space-between">
@@ -43,7 +42,7 @@ const NavBar = () => (
       borderRadius="50px"
       colorScheme="blue"
       aria-label="Logout"
-      icon={<Image src={`${SignOutSvg}`} />}
+      icon={<Image src="/images/SignOut.svg" />}
     />
   </Flex>
 );
