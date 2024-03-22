@@ -1,22 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, forwardRef } from 'react';
 import Select, { Props, components } from 'react-select';
 import { StylesConfig } from 'react-select/dist/declarations/src/styles';
 
 import DropdownIndicator from './DropdownIndicator';
-//eslint-disable-next-line
+
 interface CustomSelectProps extends Props<any> {
-  // Define any additional props you need
   customStyles?: StylesConfig;
   components?: typeof components;
   error?: boolean;
 }
 
-const CustomSelect: React.FC<CustomSelectProps> = ({
-  customStyles,
-  components,
-  ...props
-}) => {
+const CustomSelect = forwardRef<any, CustomSelectProps>((props, ref) => {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const selectRef = useRef(null);
 
   const defaultStyles: StylesConfig = {
     container: (provided, state) => ({
@@ -28,7 +24,6 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       backgroundColor: '#FFFFFF',
       outline: 'none',
     }),
-    // Define your default styles here, or you can override them using customStyles prop
     input: provided => ({
       ...provided,
       padding: '8px 12px',
@@ -46,21 +41,18 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       borderWidth: '1px',
       borderColor: props.error && !state.isFocused ? '#D95C4A' : undefined,
     }),
-
     placeholder: provided => ({
       ...provided,
-      color: '#1B1B18', // Customize placeholder color
+      color: '#1B1B18',
     }),
-
     singleValue: provided => ({
       ...provided,
       fontWeight: 450,
       fontSize: '16px',
     }),
-
     menu: provided => ({
       ...provided,
-      borderRadius: '6px', // Customize placeholder color
+      borderRadius: '6px',
       backgroundColor: '#FDFDFC',
       boxShadow:
         '0px 4px 8px 0px rgba(0, 0, 0, 0.06), 0px 0px 0px 1px rgba(0, 0, 0, 0.06)',
@@ -94,19 +86,20 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
   return (
     <Select
+      ref={ref || selectRef}
       onMenuOpen={handleMenuOpen}
       onMenuClose={handleMenuClose}
-      styles={{ ...defaultStyles, ...customStyles }}
+      styles={{ ...defaultStyles, ...props.customStyles }}
       components={{
-        DropdownIndicator: props => (
-          <DropdownIndicator {...props} isActive={menuIsOpen} />
+        DropdownIndicator: dropdownProps => (
+          <DropdownIndicator {...dropdownProps} isActive={menuIsOpen} />
         ),
         IndicatorSeparator: () => null,
-        ...components,
+        ...props.components,
       }}
       {...props}
     />
   );
-};
+});
 
 export default CustomSelect;
