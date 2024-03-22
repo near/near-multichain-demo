@@ -1,10 +1,37 @@
 import { setupWalletSelector } from '@near-wallet-selector/core';
 import { setupFastAuthWallet } from 'near-fastauth-wallet';
-import { useCallback, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 const networkId = (import.meta as any).env.VITE_NETWORK_ID;
 
-export function useSignInRedirect() {
+interface DerivedAddressParam {
+  type: 'BTC' | 'EVM';
+  signerId: string;
+  path: string;
+  networkId: 'testnet' | 'mainnet';
+  btcNetworkId?: 'testnet' | 'mainnet';
+  contract: 'multichain-testnet-2.testnet';
+}
+
+interface AuthContextType {
+  accountId: string | null;
+  requestAuthentication: (createAccount?: boolean) => Promise<void>;
+  signOut: () => Promise<void>;
+  deriveAddress: (args: DerivedAddressParam) => Promise<string>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [accountId, setAccountId] = useState<string | null>(null);
   const [fastAuthWallet, setFastAuthWallet] = useState<any | null>(null);
 
   useEffect(() => {
@@ -60,5 +87,37 @@ export function useSignInRedirect() {
     [fastAuthWallet]
   );
 
-  return { requestAuthentication, getAccountId, signOut };
-}
+  const deriveAddress = useCallback(
+    (args: DerivedAddressParam) => {
+      if (!fastAuthWallet) return;
+
+      return fastAuthWallet.getDerivedAddress(args);
+    },
+    [fastAuthWallet]
+  );
+
+  useEffect(() => {
+    const fetchAccountId = async () => {
+      const accountId = await getAccountId();
+      setAccountId(accountId);
+    };
+
+    fetchAccountId();
+  }, [getAccountId]);
+
+  return (
+    <AuthContext.Provider
+      value={{ accountId, requestAuthentication, signOut, deriveAddress }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

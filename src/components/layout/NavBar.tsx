@@ -6,10 +6,10 @@ import {
   Image,
   Heading,
 } from '@chakra-ui/react';
-import { useSignInRedirect } from '@/hooks/useSignInRedirect';
+import { useAuth } from '@/context/AuthContext';
 
 const NavBar = () => {
-  const { signOut } = useSignInRedirect();
+  const { signOut } = useAuth();
 
   return (
     <Flex align="center" p="24px 0" alignSelf="stretch" justify="space-between">

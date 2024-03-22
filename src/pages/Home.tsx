@@ -1,23 +1,23 @@
 import { Flex, Box, Text } from '@chakra-ui/react';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
-import { useSignInRedirect } from '@/hooks/useSignInRedirect';
+import { useAuth } from '@/context/AuthContext';
 
 const CreateAccount = () => {
-  const { requestAuthentication, getAccountId } = useSignInRedirect();
-
-  useEffect(() => {
-    const init = async () => {
-      console.log(await getAccountId());
-    };
-
-    init();
-  }, [getAccountId]);
+  const { requestAuthentication, accountId } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignIn = () => requestAuthentication();
 
   const handleCreateAccount = () => requestAuthentication(true);
+
+  useEffect(() => {
+    if (accountId) {
+      navigate('/generate-transaction');
+    }
+  }, [accountId, navigate]);
 
   return (
     <Card gap="35px" pt="25px">
