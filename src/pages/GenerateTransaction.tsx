@@ -84,7 +84,7 @@ const schema = yup.object().shape({
 
 const GenerateTransaction = () => {
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
-  const { deriveAddress, accountId } = useAuth();
+  const { deriveAddress, accountId, sendTransaction } = useAuth();
   const [derivedAddress, setDerivedAddress] = useState('');
   const navigate = useNavigate();
   const ref = useRef<HTMLDivElement | null>(null);
@@ -207,8 +207,12 @@ const GenerateTransaction = () => {
     });
   };
 
-  const onSubmitForm = (values: any) => {
-    console.log('values ', values);
+  const onSubmitForm = async (values: { address: string; amount: number }) => {
+    await sendTransaction({
+      derivationPath: ',ethereum,felipe.org',
+      to: values.address,
+      value: values.amount.toString(),
+    });
   };
 
   return (

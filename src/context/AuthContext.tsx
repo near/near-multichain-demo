@@ -19,11 +19,18 @@ interface DerivedAddressParam {
   contract: 'multichain-testnet-2.testnet';
 }
 
+interface SendTransactionData {
+  derivationPath: string;
+  to: string;
+  value: string;
+}
+
 interface AuthContextType {
   accountId: string | null;
   requestAuthentication: (createAccount?: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   deriveAddress: (args: DerivedAddressParam) => Promise<string>;
+  sendTransaction: (data: SendTransactionData) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -59,21 +66,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const getAccountId = useCallback(async (): Promise<string | null> => {
-    if (!fastAuthWallet) console.error('FastAuth wallet not available');
+    if (!fastAuthWallet) {
+      console.error('FastAuth wallet not available');
+      return null;
+    }
 
     const accounts = await fastAuthWallet.getAccounts();
     return accounts[0]?.accountId || null;
   }, [fastAuthWallet]);
 
   const signOut = useCallback(async (): Promise<void> => {
-    if (!fastAuthWallet) console.error('FastAuth wallet not available');
+    if (!fastAuthWallet) {
+      console.error('FastAuth wallet not available');
+      return;
+    }
 
     return fastAuthWallet.signOut();
   }, [fastAuthWallet]);
 
   const requestAuthentication = useCallback(
     async (createAccount = false): Promise<void> => {
-      if (!fastAuthWallet) console.error('FastAuth wallet not available');
+      if (!fastAuthWallet) {
+        console.error('FastAuth wallet not available');
+        return;
+      }
 
       try {
         await fastAuthWallet.signIn({
@@ -89,9 +105,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deriveAddress = useCallback(
     (args: DerivedAddressParam) => {
-      if (!fastAuthWallet) console.error('FastAuth wallet not available');
+      if (!fastAuthWallet) {
+        console.error('FastAuth wallet not available');
+        return;
+      }
 
       return fastAuthWallet.getDerivedAddress(args);
+    },
+    [fastAuthWallet]
+  );
+
+  const sendTransaction = useCallback(
+    async (data: SendTransactionData) => {
+      if (!fastAuthWallet) {
+        console.error('FastAuth wallet not available');
+        return;
+      }
+
+      return fastAuthWallet.signMultiChainTransaction(data);
     },
     [fastAuthWallet]
   );
@@ -111,7 +142,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ accountId, requestAuthentication, signOut, deriveAddress }}
+      value={{
+        accountId,
+        requestAuthentication,
+        signOut,
+        deriveAddress,
+        sendTransaction,
+      }}
     >
       {children}
     </AuthContext.Provider>
