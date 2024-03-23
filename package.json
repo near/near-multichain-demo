@@ -25,7 +25,6 @@
     "ethers": "^6.11.1",
     "events": "^3.3.0",
     "framer-motion": "^11.0.3",
-    "near-fastauth-wallet": "^0.0.12",
     "process": "^0.11.10",
     "react": "18.2.0",
     "react-dom": "18.2.0",

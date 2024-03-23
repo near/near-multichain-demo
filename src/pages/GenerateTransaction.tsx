@@ -20,8 +20,6 @@ import {
 } from '@chakra-ui/react';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as bitcoin from 'bitcoinjs-lib';
-import canonicalize from 'canonicalize';
 import React, {
   useCallback,
   useEffect,
@@ -30,6 +28,7 @@ import React, {
   useState,
 } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
@@ -87,9 +86,16 @@ const GenerateTransaction = () => {
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
   const { deriveAddress, accountId } = useAuth();
   const [derivedAddress, setDerivedAddress] = useState('');
+  const navigate = useNavigate();
   const ref = useRef<HTMLDivElement | null>(null);
   const { onCopy, setValue: setCopyValue, hasCopied } = useClipboard('');
   const toast = useToast();
+
+  useEffect(() => {
+    if (!accountId) {
+      navigate('/');
+    }
+  }, [accountId, navigate]);
 
   const {
     register,
@@ -140,7 +146,8 @@ const GenerateTransaction = () => {
         delete payload.domain;
       }
 
-      const derivationPath = canonicalize(payload);
+      // const derivationPath = canonicalize(payload);
+      const derivationPath = ',ethereum,felipe.org';
 
       if (!derivationPath || !accountId) {
         console.error('Error: Missing derivation path for address generation.');

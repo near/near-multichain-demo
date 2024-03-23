@@ -59,21 +59,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const getAccountId = useCallback(async (): Promise<string | null> => {
-    if (!fastAuthWallet) throw new Error('FastAuth wallet is not available.');
+    if (!fastAuthWallet) console.error('FastAuth wallet not available');
 
     const accounts = await fastAuthWallet.getAccounts();
     return accounts[0]?.accountId || null;
   }, [fastAuthWallet]);
 
   const signOut = useCallback(async (): Promise<void> => {
-    if (!fastAuthWallet) return;
+    if (!fastAuthWallet) console.error('FastAuth wallet not available');
 
     return fastAuthWallet.signOut();
   }, [fastAuthWallet]);
 
   const requestAuthentication = useCallback(
     async (createAccount = false): Promise<void> => {
-      if (!fastAuthWallet) return;
+      if (!fastAuthWallet) console.error('FastAuth wallet not available');
 
       try {
         await fastAuthWallet.signIn({
@@ -89,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deriveAddress = useCallback(
     (args: DerivedAddressParam) => {
-      if (!fastAuthWallet) return;
+      if (!fastAuthWallet) console.error('FastAuth wallet not available');
 
       return fastAuthWallet.getDerivedAddress(args);
     },
@@ -98,8 +98,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const fetchAccountId = async () => {
-      const accountId = await getAccountId();
-      setAccountId(accountId);
+      try {
+        const accountId = await getAccountId();
+        setAccountId(accountId);
+      } catch (e) {
+        console.error(e);
+      }
     };
 
     fetchAccountId();
