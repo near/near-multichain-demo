@@ -41,16 +41,13 @@ import { useAuth } from '@/context/AuthContext';
 import assets from '@/data/assets';
 import keyTypes from '@/data/keyTypes';
 import { toWei } from '@/utils/crypto';
+import { getPayloadAndAsset } from '@/utils/kdf';
 
 // TODO: remove after introduce Canonical JSON
 const derivationPathSchema = BorshSchema.Struct({
   asset: BorshSchema.String,
   domain: BorshSchema.Option(BorshSchema.String),
 });
-const derivationPath = borshSerialize(derivationPathSchema, {
-  asset: 'ETH',
-  domain: '',
-}).toString('base64');
 
 const helperTextProps = {
   fontSize: '12px',
@@ -147,18 +144,15 @@ const GenerateTransaction = () => {
 
   const fetchDerivedAddress = useCallback(async () => {
     try {
-      const payload: Record<string, unknown> = {
-        chain: assetType.value,
-      };
-      if (keyType.value === 'domainKey') {
-        payload.domain = window.location.origin;
-      } else if (keyType.value === 'wrongKey') {
-        payload.domain = 'https://app.unknowndomain.com';
-      } else {
-        delete payload.domain;
-      }
+      const { payload, asset } = getPayloadAndAsset(
+        assetType.value,
+        keyType.value
+      );
 
       // const derivationPath = canonicalize(payload);
+
+      const derivationPath = `,${asset},${payload.domain ?? ''}`;
+      console.log({ derivationPath });
 
       if (!derivationPath || !accountId) {
         console.error('Error: Missing derivation path for address generation.');
@@ -171,7 +165,7 @@ const GenerateTransaction = () => {
         address = await deriveAddress({
           type: 'BTC',
           signerId: accountId,
-          path: ',ETH,',
+          path: derivationPath,
           btcNetworkId: 'testnet',
           networkId: 'testnet',
           contract: 'multichain-testnet-2.testnet',
@@ -180,7 +174,7 @@ const GenerateTransaction = () => {
         address = await deriveAddress({
           type: 'EVM',
           signerId: accountId,
-          path: ',ETH,',
+          path: derivationPath,
           networkId: 'testnet',
           contract: 'multichain-testnet-2.testnet',
         });
@@ -218,14 +212,29 @@ const GenerateTransaction = () => {
     });
   };
 
-  const onSubmitForm = async (values: { address: string; amount: number }) => {
-    await sendTransaction({
-      chainId: BigInt('11155111'),
-      derivationPath,
-      to: values.address,
-      value: toWei(values.amount).toString(),
-    });
-  };
+  const onSubmitForm = useCallback(
+    async (values: { address: string; amount: number }) => {
+      const { payload, asset } = getPayloadAndAsset(
+        assetType.value,
+        keyType.value
+      );
+
+      console.log({ payload, asset });
+
+      const derivationPathSerialized = borshSerialize(derivationPathSchema, {
+        asset,
+        domain: payload.domain ?? '',
+      }).toString('base64');
+
+      await sendTransaction({
+        chainId: BigInt('11155111'),
+        derivationPath: derivationPathSerialized,
+        to: values.address,
+        value: toWei(values.amount).toString(),
+      });
+    },
+    [assetType.value, keyType.value, sendTransaction]
+  );
 
   return (
     <Box w="fit-contet" h="fit-content" ref={ref}>
