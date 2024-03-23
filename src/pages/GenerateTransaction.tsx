@@ -18,8 +18,9 @@ import {
   useToast,
   Text,
 } from '@chakra-ui/react';
-
 import { yupResolver } from '@hookform/resolvers/yup';
+import { BorshSchema, borshSerialize } from 'borsher';
+
 import React, {
   useCallback,
   useEffect,
@@ -39,6 +40,17 @@ import ToastComponent from '@/components/ToastComponent';
 import { useAuth } from '@/context/AuthContext';
 import assets from '@/data/assets';
 import keyTypes from '@/data/keyTypes';
+import { toWei } from '@/utils/crypto';
+
+// TODO: remove after introduce Canonical JSON
+const derivationPathSchema = BorshSchema.Struct({
+  asset: BorshSchema.String,
+  domain: BorshSchema.Option(BorshSchema.String),
+});
+const derivationPath = borshSerialize(derivationPathSchema, {
+  asset: 'ETH',
+  domain: '',
+}).toString('base64');
 
 const helperTextProps = {
   fontSize: '12px',
@@ -88,7 +100,7 @@ const GenerateTransaction = () => {
   const [derivedAddress, setDerivedAddress] = useState('');
   const navigate = useNavigate();
   const ref = useRef<HTMLDivElement | null>(null);
-  const { onCopy, setValue: setCopyValue, hasCopied } = useClipboard('');
+  const { onCopy, setValue: setCopyValue } = useClipboard('');
   const toast = useToast();
 
   useEffect(() => {
@@ -147,7 +159,6 @@ const GenerateTransaction = () => {
       }
 
       // const derivationPath = canonicalize(payload);
-      const derivationPath = ',ethereum,felipe.org';
 
       if (!derivationPath || !accountId) {
         console.error('Error: Missing derivation path for address generation.');
@@ -160,7 +171,7 @@ const GenerateTransaction = () => {
         address = await deriveAddress({
           type: 'BTC',
           signerId: accountId,
-          path: derivationPath,
+          path: ',ETH,',
           btcNetworkId: 'testnet',
           networkId: 'testnet',
           contract: 'multichain-testnet-2.testnet',
@@ -169,7 +180,7 @@ const GenerateTransaction = () => {
         address = await deriveAddress({
           type: 'EVM',
           signerId: accountId,
-          path: derivationPath,
+          path: ',ETH,',
           networkId: 'testnet',
           contract: 'multichain-testnet-2.testnet',
         });
@@ -209,9 +220,10 @@ const GenerateTransaction = () => {
 
   const onSubmitForm = async (values: { address: string; amount: number }) => {
     await sendTransaction({
-      derivationPath: ',ethereum,felipe.org',
+      chainId: BigInt('11155111'),
+      derivationPath,
       to: values.address,
-      value: values.amount.toString(),
+      value: toWei(values.amount).toString(),
     });
   };
 

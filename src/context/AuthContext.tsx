@@ -23,6 +23,7 @@ interface SendTransactionData {
   derivationPath: string;
   to: string;
   value: string;
+  chainId?: bigint;
 }
 
 interface AuthContextType {
@@ -45,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     async function init() {
       const relayerUrl =
         networkId === 'testnet'
-          ? 'https://corsproxy.io/?https://near-relayer-testnet.api.pagoda.co/relay'
+          ? 'https://corsproxy.io/?http://34.70.226.83:3030/relay'
           : 'https://near-relayer-mainnet.api.pagoda.co/relay';
 
       const selector = await setupWalletSelector({
