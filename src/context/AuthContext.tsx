@@ -24,6 +24,7 @@ interface SendTransactionData {
   to: string;
   value: string;
   chainId?: bigint;
+  from?: string;
 }
 
 interface AuthContextType {

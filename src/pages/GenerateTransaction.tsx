@@ -40,7 +40,7 @@ import ToastComponent from '@/components/ToastComponent';
 import { useAuth } from '@/context/AuthContext';
 import assets from '@/data/assets';
 import keyTypes from '@/data/keyTypes';
-import { toWei } from '@/utils/crypto';
+import { toSatoshis, toWei } from '@/utils/crypto';
 import { getPayloadAndAsset } from '@/utils/kdf';
 
 // TODO: remove after introduce Canonical JSON
@@ -187,7 +187,7 @@ const GenerateTransaction = () => {
     } catch (e) {
       console.log('Error fetching derived address ', e);
     }
-  }, [accountId, assetType.value, deriveAddress, keyType.value, setCopyValue]);
+  }, [accountId, assetType, deriveAddress, keyType.value, setCopyValue]);
 
   useEffect(() => {
     if (!assetType || !keyType) return;
@@ -230,10 +230,11 @@ const GenerateTransaction = () => {
         chainId: BigInt('11155111'),
         derivationPath: derivationPathSerialized,
         to: values.address,
-        value: toWei(values.amount).toString(),
+        value: toSatoshis(values.amount).toString(),
+        from: derivedAddress,
       });
     },
-    [assetType.value, keyType.value, sendTransaction]
+    [assetType.value, derivedAddress, keyType.value, sendTransaction]
   );
 
   return (
