@@ -18,7 +18,6 @@ import {
   useToast,
   Text,
 } from '@chakra-ui/react';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { BorshSchema, borshSerialize } from 'borsher';
 
 import React, {
@@ -30,7 +29,6 @@ import React, {
 } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import * as yup from 'yup';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import PageTitle from '@/components/PageTitle';
@@ -38,10 +36,9 @@ import PlusCircle from '@/components/PlusCircle';
 import { Select, KeyTypeOption, AssetOption } from '@/components/select';
 import ToastComponent from '@/components/ToastComponent';
 import { useAuth } from '@/context/AuthContext';
-import assets from '@/data/assets';
-import keyTypes from '@/data/keyTypes';
-import { toSatoshis, toWei } from '@/utils/crypto';
-import { getPayloadAndAsset } from '@/utils/kdf';
+import assets, { Asset } from '@/data/assets';
+import keyTypes, { KeyType } from '@/data/keyTypes';
+import { getAsset, getDomain, getPayloadAndAsset } from '@/utils/utils';
 
 // TODO: remove after introduce Canonical JSON
 const derivationPathSchema = BorshSchema.Struct({
@@ -72,24 +69,12 @@ const getComputedInputStyles = (
   };
 };
 
-const schema = yup.object().shape({
-  keyType: yup
-    .object()
-    .shape({
-      value: yup.string().required('Key type is required'),
-      label: yup.string().required('Key type is required'),
-    })
-    .required('This is required'),
-  assetType: yup
-    .object()
-    .shape({
-      value: yup.number().required('Please select an asset'),
-      label: yup.string().required('Please select an asset'),
-    })
-    .required('This is required'),
-  amount: yup.number().required('This is required'),
-  address: yup.string().required('This is required'),
-});
+type FormValues = {
+  address: string;
+  amount: number;
+  assetType: Asset;
+  keyType: KeyType;
+};
 
 const GenerateTransaction = () => {
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
@@ -112,14 +97,12 @@ const GenerateTransaction = () => {
     formState: { errors = {}, isValid },
     control,
     watch,
-  } = useForm({
+  } = useForm<FormValues>({
     mode: 'onSubmit',
-    resolver: yupResolver(schema),
     defaultValues: {
       keyType: keyTypes[0],
       assetType: assets[0],
       amount: 0.01,
-      //address: 'mw5vJDm1Vx0xyBCiMsaT7',
     },
   });
   const assetType = watch('assetType');
@@ -144,14 +127,12 @@ const GenerateTransaction = () => {
 
   const fetchDerivedAddress = useCallback(async () => {
     try {
-      const { payload, asset } = getPayloadAndAsset(
-        assetType.value,
-        keyType.value
-      );
+      const domain = getDomain(keyType.value);
+      const asset = getAsset(assetType.value);
 
       // const derivationPath = canonicalize(payload);
 
-      const derivationPath = `,${asset},${payload.domain ?? ''}`;
+      const derivationPath = `,${asset},${domain}`;
       console.log({ derivationPath });
 
       if (!derivationPath || !accountId) {
@@ -213,28 +194,34 @@ const GenerateTransaction = () => {
   };
 
   const onSubmitForm = useCallback(
-    async (values: { address: string; amount: number }) => {
-      const { payload, asset } = getPayloadAndAsset(
+    async (values: {
+      address: string;
+      amount: number;
+      assetType: Asset;
+      keyType: KeyType;
+    }) => {
+      const { domain, asset, value } = getPayloadAndAsset(
         assetType.value,
-        keyType.value
+        keyType.value,
+        values.amount
       );
 
-      console.log({ payload, asset });
+      console.log({ domain, asset, value });
 
       const derivationPathSerialized = borshSerialize(derivationPathSchema, {
         asset,
-        domain: payload.domain ?? '',
+        domain: domain ?? '',
       }).toString('base64');
 
       await sendTransaction({
-        chainId: BigInt('11155111'),
+        chainId: assetType.chainId,
         derivationPath: derivationPathSerialized,
         to: values.address,
-        value: toSatoshis(values.amount).toString(),
+        value: value.toString(),
         from: derivedAddress,
       });
     },
-    [assetType.value, derivedAddress, keyType.value, sendTransaction]
+    [assetType, derivedAddress, keyType, sendTransaction]
   );
 
   return (

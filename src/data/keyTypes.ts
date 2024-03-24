@@ -1,4 +1,11 @@
-const keyTypes = [
+export type KeyType = {
+  label: string;
+  value: string;
+  iconImage: string;
+  assistiveMessage: string;
+};
+
+const keyTypes: KeyType[] = [
   {
     label: 'Domain Key',
     value: 'domainKey',

@@ -23,7 +23,7 @@ interface SendTransactionData {
   derivationPath: string;
   to: string;
   value: string;
-  chainId?: bigint;
+  chainId?: bigint | string;
   from?: string;
 }
 
