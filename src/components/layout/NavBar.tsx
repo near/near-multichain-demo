@@ -9,7 +9,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 
 const NavBar = () => {
-  const { signOut } = useAuth();
+  const { signOut, accountId } = useAuth();
 
   return (
     <Flex align="center" p="24px 0" alignSelf="stretch" justify="space-between">
@@ -32,7 +32,7 @@ const NavBar = () => {
           lineHeight="140%"
           letterSpacing="0.24px"
         >
-          username@email.com
+          {accountId}
         </Text>
       </Stack>
       <IconButton

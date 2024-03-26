@@ -18,8 +18,8 @@ import {
   useToast,
   Text,
 } from '@chakra-ui/react';
-import { BorshSchema, borshSerialize } from 'borsher';
 
+import canonicalize from 'canonicalize';
 import React, {
   useCallback,
   useEffect,
@@ -35,16 +35,10 @@ import PageTitle from '@/components/PageTitle';
 import PlusCircle from '@/components/PlusCircle';
 import { Select, KeyTypeOption, AssetOption } from '@/components/select';
 import ToastComponent from '@/components/ToastComponent';
-import { useAuth } from '@/context/AuthContext';
+import { SendMultichainMessage, useAuth } from '@/context/AuthContext';
 import assets, { Asset } from '@/data/assets';
 import keyTypes, { KeyType } from '@/data/keyTypes';
-import { getAsset, getDomain, getPayloadAndAsset } from '@/utils/utils';
-
-// TODO: remove after introduce Canonical JSON
-const derivationPathSchema = BorshSchema.Struct({
-  asset: BorshSchema.String,
-  domain: BorshSchema.Option(BorshSchema.String),
-});
+import { getDomain, getPayloadAndAsset } from '@/utils/utils';
 
 const helperTextProps = {
   fontSize: '12px',
@@ -128,11 +122,12 @@ const GenerateTransaction = () => {
   const fetchDerivedAddress = useCallback(async () => {
     try {
       const domain = getDomain(keyType.value);
-      const asset = getAsset(assetType.value);
 
-      // const derivationPath = canonicalize(payload);
+      const derivationPath = canonicalize(
+        domain ? { chain: assetType.value, domain } : { chain: assetType.value }
+      );
 
-      const derivationPath = `,${asset},${domain}`;
+      // const derivationPath = `,${asset},${domain}`;
       console.log({ derivationPath });
 
       if (!derivationPath || !accountId) {
@@ -207,19 +202,29 @@ const GenerateTransaction = () => {
       );
 
       console.log({ domain, asset, value });
+      let payload: SendMultichainMessage;
 
-      const derivationPathSerialized = borshSerialize(derivationPathSchema, {
-        asset,
-        domain: domain ?? '',
-      }).toString('base64');
+      if (assetType.value === 0) {
+        payload = {
+          chain: assetType.value,
+          ...(domain ? { domain } : {}),
+          to: values.address,
+          value: BigInt(value),
+          from: derivedAddress,
+          network: assetType.chainId === 'testnet' ? 'testnet' : 'mainnet',
+        };
+      } else {
+        payload = {
+          chain: assetType.value,
+          ...(domain ? { domain } : {}),
+          to: values.address,
+          value: BigInt(value),
+          from: derivedAddress,
+          chainId: assetType.chainId as bigint,
+        };
+      }
 
-      await sendTransaction({
-        chainId: assetType.chainId,
-        derivationPath: derivationPathSerialized,
-        to: values.address,
-        value: value.toString(),
-        from: derivedAddress,
-      });
+      await sendTransaction(payload);
     },
     [assetType, derivedAddress, keyType, sendTransaction]
   );
@@ -325,9 +330,9 @@ const GenerateTransaction = () => {
                 </NumberIncrementStepper>
               </NumberInputStepper>
             </NumberInput>
-            <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
-              42.331 available
-            </FormHelperText>
+            {/* <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
+              ... available
+            </FormHelperText> */}
             <FormErrorMessage>{errors?.amount?.message}</FormErrorMessage>
           </FormControl>
           <FormControl>
