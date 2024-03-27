@@ -4,10 +4,11 @@
   "license": "MIT",
   "scripts": {
     "start": "nx serve",
-    "build": "nx build near-multichain-demo --prod",
-    "build:vercel": "nx build near-multichain-demo --prod",
+    "build": "nx build",
     "prepare": "husky install",
-    "test": "nx test"
+    "test": "nx test",
+    "start:vite": "vite",
+    "build:vite": "vite build"
   },
   "private": true,
   "dependencies": {

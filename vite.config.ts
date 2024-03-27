@@ -18,15 +18,7 @@ export default defineConfig(({ mode }) => {
     root: __dirname,
     cacheDir: './node_modules/.vite/.',
     define: defineEnv,
-    server: {
-      port: 4200,
-      host: 'localhost',
-    },
 
-    preview: {
-      port: 4300,
-      host: 'localhost',
-    },
     plugins: [
       svgr(),
       react(),
