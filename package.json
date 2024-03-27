@@ -6,7 +6,8 @@
     "start": "nx serve",
     "build": "nx build",
     "prepare": "husky install",
-    "test": "nx test"
+    "test": "nx test",
+    "start:vite": "vite"
   },
   "private": true,
   "dependencies": {
