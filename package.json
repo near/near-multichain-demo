@@ -5,7 +5,7 @@
   "scripts": {
     "start": "nx serve",
     "build": "nx build near-multichain-demo --prod",
-    "build:vercel": "nx near-multichain-demo --prod",
+    "build:vercel": "nx build near-multichain-demo --prod",
     "prepare": "husky install",
     "test": "nx test"
   },
