@@ -19,20 +19,36 @@ interface DerivedAddressParam {
   contract: 'multichain-testnet-2.testnet';
 }
 
-interface SendTransactionData {
-  derivationPath: string;
+interface BaseSendMultichainMessage {
+  chain: number;
+  domain?: string;
   to: string;
-  value: string;
-  chainId?: bigint | string;
-  from?: string;
+  value: bigint;
+  meta?: { [k: string]: any };
+  from: string;
 }
+
+type EvmSendMultichainMessage = BaseSendMultichainMessage & {
+  chainId: bigint;
+  maxFeePerGas?: bigint;
+  maxPriorityFeePerGas?: bigint;
+  gasLimit?: number;
+};
+
+type BTCSendMultichainMessage = BaseSendMultichainMessage & {
+  network: 'mainnet' | 'testnet';
+};
+
+export type SendMultichainMessage =
+  | BTCSendMultichainMessage
+  | EvmSendMultichainMessage;
 
 interface AuthContextType {
   accountId: string | null;
   requestAuthentication: (createAccount?: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   deriveAddress: (args: DerivedAddressParam) => Promise<string>;
-  sendTransaction: (data: SendTransactionData) => Promise<void>;
+  sendTransaction: (data: SendMultichainMessage) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,7 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         modules: [
           setupFastAuthWallet({
             relayerUrl,
-            walletUrl: 'http://localhost:3000',
           }),
         ],
       });
@@ -118,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const sendTransaction = useCallback(
-    async (data: SendTransactionData) => {
+    async (data: SendMultichainMessage) => {
       if (!fastAuthWallet) {
         console.error('FastAuth wallet not available');
         return;
