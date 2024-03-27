@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     async function init() {
       const relayerUrl =
         networkId === 'testnet'
-          ? 'https://corsproxy.io/?http://34.70.226.83:3030/relay'
+          ? 'https://corsproxy.io/?https://34.70.226.83:3030/relay'
           : 'https://near-relayer-mainnet.api.pagoda.co/relay';
 
       const selector = await setupWalletSelector({
