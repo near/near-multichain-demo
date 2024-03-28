@@ -98,7 +98,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
-    return fastAuthWallet.signOut();
+    await fastAuthWallet.signOut();
+
+    window.location.pathname = '/';
   }, [fastAuthWallet]);
 
   const requestAuthentication = useCallback(
