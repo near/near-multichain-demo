@@ -17,6 +17,7 @@ import {
   useClipboard,
   useToast,
   Text,
+  Tooltip,
 } from '@chakra-ui/react';
 
 import canonicalize from 'canonicalize';
@@ -28,7 +29,6 @@ import React, {
   useState,
 } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import PageTitle from '@/components/PageTitle';
@@ -39,6 +39,15 @@ import { SendMultichainMessage, useAuth } from '@/context/AuthContext';
 import assets, { Asset } from '@/data/assets';
 import keyTypes, { KeyType } from '@/data/keyTypes';
 import { getDomain, getPayloadAndAsset } from '@/utils/utils';
+
+const CopiedNotification = () => (
+  <ToastComponent align="center" gap={1.5}>
+    <Image src="/images/CheckCircle.svg" />
+    <Text color="--Sand-Light-12" fontSize="13px" fontWeight={500}>
+      Address copied to clipboard
+    </Text>
+  </ToastComponent>
+);
 
 const helperTextProps = {
   fontSize: '12px',
@@ -74,16 +83,9 @@ const GenerateTransaction = () => {
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
   const { deriveAddress, accountId, sendTransaction } = useAuth();
   const [derivedAddress, setDerivedAddress] = useState('');
-  const navigate = useNavigate();
   const ref = useRef<HTMLDivElement | null>(null);
   const { onCopy, setValue: setCopyValue } = useClipboard('');
   const toast = useToast();
-
-  useEffect(() => {
-    if (!accountId) {
-      navigate('/');
-    }
-  }, [accountId, navigate]);
 
   const {
     register,
@@ -178,13 +180,7 @@ const GenerateTransaction = () => {
   const handleCopyClick = () => {
     onCopy();
     toast({
-      render: (): React.ReactNode => (
-        <ToastComponent>
-          <Text color="--Sand-Light-12" fontSize="13px" fontWeight={500}>
-            Address copied to clipboard
-          </Text>
-        </ToastComponent>
-      ),
+      render: CopiedNotification,
     });
   };
 
@@ -283,22 +279,24 @@ const GenerateTransaction = () => {
               </FormHelperText>
               <FormErrorMessage>{errors?.assetType?.message}</FormErrorMessage>
             </FormControl>
-            <IconButton
-              h="40px"
-              w="40px"
-              bg="--Sand-Light-1"
-              opacity={0.9}
-              _hover={{ bg: '--Sand-Light-1', opacity: 1 }}
-              border="1px solid"
-              borderColor="--Sand-Light-6"
-              borderRadius="50px"
-              colorScheme="blue"
-              aria-label="Copy"
-              icon={<Image src="/images/Copy.svg" />}
-              mb="1px"
-              onClick={handleCopyClick}
-              isDisabled={!derivedAddress}
-            />
+            <Tooltip label={derivedAddress} placement="top" hasArrow>
+              <IconButton
+                h="40px"
+                w="40px"
+                bg="--Sand-Light-1"
+                opacity={0.9}
+                _hover={{ bg: '--Sand-Light-1', opacity: 1 }}
+                border="1px solid"
+                borderColor="--Sand-Light-6"
+                borderRadius="50px"
+                colorScheme="blue"
+                aria-label="Copy"
+                icon={<Image src="/images/Copy.svg" />}
+                mb="2px"
+                onClick={handleCopyClick}
+                isDisabled={!derivedAddress}
+              />
+            </Tooltip>
           </Flex>
           <FormControl>
             <FormLabel {...helperTextProps} fontWeight={600}>
