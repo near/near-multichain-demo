@@ -74,16 +74,9 @@ const GenerateTransaction = () => {
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
   const { deriveAddress, accountId, sendTransaction } = useAuth();
   const [derivedAddress, setDerivedAddress] = useState('');
-  const navigate = useNavigate();
   const ref = useRef<HTMLDivElement | null>(null);
   const { onCopy, setValue: setCopyValue } = useClipboard('');
   const toast = useToast();
-
-  useEffect(() => {
-    if (!accountId) {
-      navigate('/');
-    }
-  }, [accountId, navigate]);
 
   const {
     register,

@@ -49,6 +49,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   deriveAddress: (args: DerivedAddressParam) => Promise<string>;
   sendTransaction: (data: SendMultichainMessage) => Promise<void>;
+  signedIn: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -58,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [accountId, setAccountId] = useState<string | null>(null);
   const [fastAuthWallet, setFastAuthWallet] = useState<any | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -99,8 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     await fastAuthWallet.signOut();
-
-    window.location.pathname = '/';
+    setSignedIn(false); // User signed out, so update signedIn state
   }, [fastAuthWallet]);
 
   const requestAuthentication = useCallback(
@@ -151,6 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const accountId = await getAccountId();
         setAccountId(accountId);
+        setSignedIn(!!accountId); // Update signedIn state based on accountId
       } catch (e) {
         console.error(e);
       }
@@ -167,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         signOut,
         deriveAddress,
         sendTransaction,
+        signedIn,
       }}
     >
       {children}

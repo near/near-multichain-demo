@@ -9,7 +9,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 
 const NavBar = () => {
-  const { signOut, accountId } = useAuth();
+  const { signOut, accountId, signedIn } = useAuth();
 
   return (
     <Flex align="center" p="24px 0" alignSelf="stretch" justify="space-between">
@@ -25,30 +25,34 @@ const NavBar = () => {
         >
           Multi Chain Demo
         </Heading>
-        <Text
-          color="--Sand-Light-11"
-          fontSize="12px"
-          fontWeight={450}
-          lineHeight="140%"
-          letterSpacing="0.24px"
-        >
-          {accountId}
-        </Text>
+        {signedIn && (
+          <Text
+            color="--Sand-Light-11"
+            fontSize="12px"
+            fontWeight={450}
+            lineHeight="140%"
+            letterSpacing="0.24px"
+          >
+            {accountId}
+          </Text>
+        )}
       </Stack>
-      <IconButton
-        h="40px"
-        w="40px"
-        bg="--Sand-Light-1"
-        opacity={0.9}
-        _hover={{ bg: '--Sand-Light-1', opacity: 1 }}
-        border="1px solid"
-        borderColor="--Sand-Light-6"
-        borderRadius="50px"
-        colorScheme="blue"
-        aria-label="Logout"
-        icon={<Image src="/images/SignOut.svg" />}
-        onClick={signOut}
-      />
+      {signedIn && (
+        <IconButton
+          h="40px"
+          w="40px"
+          bg="--Sand-Light-1"
+          opacity={0.9}
+          _hover={{ bg: '--Sand-Light-1', opacity: 1 }}
+          border="1px solid"
+          borderColor="--Sand-Light-6"
+          borderRadius="50px"
+          colorScheme="blue"
+          aria-label="Logout"
+          icon={<Image src="/images/SignOut.svg" />}
+          onClick={signOut}
+        />
+      )}
     </Flex>
   );
 };

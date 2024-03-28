@@ -6,7 +6,7 @@ import Card from '@/components/Card';
 import { useAuth } from '@/context/AuthContext';
 
 const CreateAccount = () => {
-  const { requestAuthentication, accountId } = useAuth();
+  const { requestAuthentication, signedIn } = useAuth();
   const navigate = useNavigate();
 
   const handleSignIn = () => requestAuthentication();
@@ -14,10 +14,10 @@ const CreateAccount = () => {
   const handleCreateAccount = () => requestAuthentication(true);
 
   useEffect(() => {
-    if (accountId) {
+    if (signedIn) {
       navigate('/generate-transaction');
     }
-  }, [accountId, navigate]);
+  }, [navigate, signedIn]);
 
   return (
     <Card gap="35px" pt="25px">
