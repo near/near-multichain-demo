@@ -86,6 +86,7 @@ const CustomSelect = forwardRef<any, CustomSelectProps>((props, ref) => {
 
   return (
     <Select
+      {...props}
       ref={ref || selectRef}
       onMenuOpen={handleMenuOpen}
       onMenuClose={handleMenuClose}
@@ -97,7 +98,6 @@ const CustomSelect = forwardRef<any, CustomSelectProps>((props, ref) => {
         IndicatorSeparator: () => null,
         ...props.components,
       }}
-      {...props}
     />
   );
 });
