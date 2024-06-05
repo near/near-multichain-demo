@@ -1,15 +1,15 @@
-import { Image, Text, Flex, Link } from '@chakra-ui/react';
+import { Image, Text, Flex, Link, Box } from '@chakra-ui/react';
 import React from 'react';
 import ToastComponent from '@/components/ToastComponent';
 
 type AppNotificationProps = {
   type: 'SUCCESS' | 'ERROR' | 'WARNING';
   title?: string;
-  message: string;
+  message: React.ReactNode | string;
   externalLink?: string;
   externalLinkLabel?: string;
 };
-
+// This images are available in the public folder
 const ImageIconsTypeMap: Record<string, string> = {
   SUCCESS: 'CheckCircle',
   ERROR: 'ErrorCircle',
@@ -30,9 +30,13 @@ const AppNotification: React.FC<AppNotificationProps> = ({
           <Text color="--Sand-Light-12" fontSize="12px" fontWeight={600}>
             {title}
           </Text>
-          <Text color="--Sand-Light-11" fontSize="12px" fontWeight={450}>
-            {message}
-          </Text>
+          {typeof message === 'string' ? (
+            <Text color="--Sand-Light-11" fontSize="12px" fontWeight={450}>
+              {message}
+            </Text>
+          ) : (
+            <Box>{message}</Box>
+          )}
         </Flex>
       </Flex>
       {externalLink && (
@@ -40,9 +44,11 @@ const AppNotification: React.FC<AppNotificationProps> = ({
           color="--Violet-Light-10"
           fontSize="12px"
           fontWeight={600}
-          href={externalLinkLabel}
+          href={externalLink}
+          isExternal
+          target="_blank"
         >
-          View
+          {externalLinkLabel}
         </Link>
       )}
     </Flex>
