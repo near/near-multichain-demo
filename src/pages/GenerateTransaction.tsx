@@ -146,7 +146,7 @@ const GenerateTransaction = () => {
           path: derivationPath,
           btcNetworkId: 'testnet',
           networkId: 'testnet',
-          contract: 'multichain-testnet-2.testnet',
+          contract: 'v2.multichain-mpc.testnet',
         });
       } else if (assetType.value === 60) {
         address = await deriveAddress({
@@ -154,7 +154,7 @@ const GenerateTransaction = () => {
           signerId: accountId,
           path: derivationPath,
           networkId: 'testnet',
-          contract: 'multichain-testnet-2.testnet',
+          contract: 'v2.multichain-mpc.testnet',
         });
       }
 

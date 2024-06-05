@@ -16,7 +16,7 @@ interface DerivedAddressParam {
   path: string;
   networkId: 'testnet' | 'mainnet';
   btcNetworkId?: 'testnet' | 'mainnet';
-  contract: 'multichain-testnet-2.testnet';
+  contract: 'v2.multichain-mpc.testnet';
 }
 
 interface BaseSendMultichainMessage {
