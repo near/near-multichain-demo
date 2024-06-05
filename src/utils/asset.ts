@@ -8,10 +8,18 @@ export function toSatoshis(btc: number): string {
   return satoshis.toString();
 }
 
+export function fromWei(wei: string): number {
+  return Number(BigInt(wei)) / 1e18;
+}
+
+export function fromSatoshis(satoshis: string): number {
+  return Number(BigInt(satoshis)) / 1e8;
+}
+
 export const getDomain = (keyTypeValue: string): string => {
   if (keyTypeValue === 'domainKey') {
     return window.location.origin;
-  } else if (keyTypeValue === 'wrongKey') {
+  } else if (keyTypeValue === 'unknownKey') {
     return 'https://app.unknowndomain.com';
   } else {
     return '';
@@ -48,3 +56,12 @@ export const getPayloadAndAsset = (
   const value = getValue(assetTypeValue, amount);
   return { domain, asset, value };
 };
+
+export function truncateAddressForDisplay(address: string) {
+  if (address.length <= 9) {
+    return address; // Return the address as is if it's too short to truncate meaningfully
+  }
+  const start = address.slice(0, 5);
+  const end = address.slice(-6);
+  return `${start}....${end}`;
+}

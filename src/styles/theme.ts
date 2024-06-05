@@ -45,6 +45,7 @@ const colors = {
   '--Red-Light-9': '#F77A69',
   '--Red-Light-12': '#4B0B02',
   '--Violet-Light-8': '#604CC8',
+  '--Violet-Light-10': '#6D62D4',
   '--Violet-Light-12': '#191641',
 };
 
@@ -53,7 +54,7 @@ const fonts = {
   body: `'Mona Sans', sans-serif`,
 };
 
-export const theme = extendTheme({
+export default extendTheme({
   styles,
   colors,
   fonts,
@@ -69,8 +70,6 @@ export const theme = extendTheme({
             borderColor: '--Sand-Light-6',
             color: '--Violet-Light-12',
             backgroundColor: '--Sand-Light-1',
-            padding: '8px 12px',
-            height: '40px',
             borderRadius: '6px',
             letterSpacing: '0.32px',
             _hover: {},
@@ -86,7 +85,58 @@ export const theme = extendTheme({
         variant: 'defaultVariant',
       },
     },
+    Button: {
+      baseStyle: {
+        p: '8px 24px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignContent: 'center',
+        borderRadius: '50px',
+        fontSize: '16px',
+        fontWeight: 600,
+        lineHeight: '150%',
+        _hover: {
+          opacity: 1,
+          _disabled: {
+            bg: '--Sand-Light-4', // Customize as needed
+            borderColor: 'transparent',
+          },
+        },
+        _active: { opacity: 1 },
+        _disabled: {
+          opacity: 1,
+          color: '--Sand-Light-8',
+          bg: '--Sand-Light-3',
+          borderColor: 'transparent',
+          cursor: 'default',
+        },
+        _loading: {
+          borderColor: '--Sand-Light-6',
+          bg: '--Sand-Light-1',
+        },
+      },
+      variants: {
+        green: {
+          height: '48px',
+          bg: '--Green-Light-9',
+          color: '--Green-Light-12',
+          border: '1px solid',
+          borderColor: '--Green-Light-8',
+        },
+        black: {
+          height: '48px',
+          bg: '--Sand-Dark-1',
+          color: '#fff',
+          border: '1px solid',
+        },
+        red: {
+          height: '48px',
+          bg: '--Red-Light-9',
+          color: '--Red-Light-12',
+          border: '1px solid',
+          borderColor: '--Red-Light-8',
+        },
+      },
+    },
   },
 });
-
-export default theme;

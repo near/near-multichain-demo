@@ -16,16 +16,16 @@ const assets: Asset[] = [
     iconImage: '/images/eth.png',
     networkImage: '/images/eth-alt.png',
     networkTooltip: 'Ethereum Network',
-    code: 'ETH',
+    code: 'eth-sepolia',
   },
   {
-    label: 'BNB testnet',
+    label: 'BSC testnet',
     value: 60,
     chainId: BigInt('97'),
     iconImage: '/images/bnb.png',
     networkImage: '/images/bsc.png',
     networkTooltip: 'BNB Smart Chain',
-    code: 'BNB',
+    code: 'bsc-testnet',
   },
   {
     label: 'BTC testnet',
@@ -34,7 +34,7 @@ const assets: Asset[] = [
     iconImage: '/images/btc.png',
     networkImage: '/images/btc-alt.png',
     networkTooltip: 'Bitcoin Network',
-    code: 'BTC',
+    code: 'btc-testnet',
   },
   // {
   //   label: 'ETH mainnet',

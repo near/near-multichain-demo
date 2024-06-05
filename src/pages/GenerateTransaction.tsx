@@ -9,45 +9,39 @@ import {
   NumberInputStepper,
   InputGroup,
   Input,
-  IconButton,
   Image,
   ChakraProps,
   NumberIncrementStepper,
   Box,
   useClipboard,
   useToast,
-  Text,
   Tooltip,
+  Skeleton,
 } from '@chakra-ui/react';
 
-import canonicalize from 'canonicalize';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import * as yup from 'yup';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
+import { AppNotification } from '@/components/notifications';
 import PageTitle from '@/components/PageTitle';
 import PlusCircle from '@/components/PlusCircle';
 import { Select, KeyTypeOption, AssetOption } from '@/components/select';
-import ToastComponent from '@/components/ToastComponent';
 import { SendMultichainMessage, useAuth } from '@/context/AuthContext';
 import assets, { Asset } from '@/data/assets';
 import keyTypes, { KeyType } from '@/data/keyTypes';
-import { getDomain, getPayloadAndAsset } from '@/utils/utils';
+import useDerivedAddress from '@/hooks/useDerivedAddress';
+import useFetchTokenBalance from '@/hooks/useFetchTokenBalance';
+import { getPayloadAndAsset, truncateAddressForDisplay } from '@/utils/asset';
 
-const CopiedNotification = () => (
-  <ToastComponent align="center" gap={1.5}>
-    <Image src="/images/CheckCircle.svg" />
-    <Text color="--Sand-Light-12" fontSize="13px" fontWeight={500}>
-      Address copied to clipboard
-    </Text>
-  </ToastComponent>
-);
+type MultiChainResponse = {
+  type: string;
+  message: string;
+  transactionHash?: string;
+  closeIframe: boolean;
+};
 
 const helperTextProps = {
   fontSize: '12px',
@@ -55,6 +49,7 @@ const helperTextProps = {
   lineHeight: '140%',
   letterSpacing: '0.24px',
   my: '2px',
+  mt: 0,
 };
 
 const getComputedInputStyles = (
@@ -79,108 +74,111 @@ type FormValues = {
   keyType: KeyType;
 };
 
+const schema = yup.object().shape({
+  keyType: yup.object<KeyType>().required('This is required'),
+  assetType: yup.object<Asset>().required('This is required'),
+  address: yup.string().required('This is required'),
+  amount: yup.number().required('This is required'),
+});
+
 const GenerateTransaction = () => {
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
-  const { deriveAddress, accountId, sendTransaction } = useAuth();
-  const [derivedAddress, setDerivedAddress] = useState('');
+  const { sendTransaction } = useAuth();
+  const [inFlight, setInFlight] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const { onCopy, setValue: setCopyValue } = useClipboard('');
   const toast = useToast();
-
   const {
     register,
     handleSubmit,
     formState: { errors = {}, isValid },
     control,
     watch,
+    reset,
   } = useForm<FormValues>({
     mode: 'onSubmit',
     defaultValues: {
       keyType: keyTypes[0],
       assetType: assets[0],
       amount: 0.01,
+      address: '',
     },
+    // @ts-expect-error: There's currently a typing issue with the resolver library
+    resolver: yupResolver(schema),
   });
   const assetType = watch('assetType');
   const keyType = watch('keyType');
 
-  const selectedAsset = useMemo(
-    () =>
-      assets.find(
-        ({ label, value }) =>
-          label === assetType.label && value === assetType.value
-      ),
-    [assetType]
-  );
+  const {
+    fetchDerivedAddress,
+    derivedAddress,
+    loading: deriveAddressLoading,
+    error: deriveAddressError,
+  } = useDerivedAddress(assetType, keyType);
+  const {
+    refetch: fetchTokenBalance,
+    balance: tokenBalance,
+    loading: tokenBalanceLoading,
+    error: tokenBalanceError,
+  } = useFetchTokenBalance(derivedAddress, assetType.code);
 
-  const selectedKey = useMemo(
-    () =>
-      keyTypes.find(
-        ({ label, value }) => label === keyType.label && value === keyType.value
-      ),
-    [keyType]
-  );
-
-  const fetchDerivedAddress = useCallback(async () => {
-    try {
-      const domain = getDomain(keyType.value);
-
-      const derivationPath = canonicalize(
-        domain ? { chain: assetType.value, domain } : { chain: assetType.value }
-      );
-
-      // const derivationPath = `,${asset},${domain}`;
-      console.log({ derivationPath });
-
-      if (!derivationPath || !accountId) {
-        console.error('Error: Missing derivation path for address generation.');
-        return;
-      }
-
-      let address = '';
-
-      if (assetType.value === 0) {
-        address = await deriveAddress({
-          type: 'BTC',
-          signerId: accountId,
-          path: derivationPath,
-          btcNetworkId: 'testnet',
-          networkId: 'testnet',
-          contract: 'v2.multichain-mpc.testnet',
-        });
-      } else if (assetType.value === 60) {
-        address = await deriveAddress({
-          type: 'EVM',
-          signerId: accountId,
-          path: derivationPath,
-          networkId: 'testnet',
-          contract: 'v2.multichain-mpc.testnet',
+  const handleMultiChainMessage = useCallback(
+    (e: MessageEvent) => {
+      if (e.data.type === 'multiChainRequest') setInFlight(true);
+      if (e.data.type === 'multiChainResponse') {
+        setInFlight(false);
+        console.log('e.data ', e.data);
+        const { transactionHash, message } = e.data as MultiChainResponse;
+        if (transactionHash) {
+          fetchTokenBalance();
+          reset();
+        }
+        toast({
+          duration: 10000,
+          render: () => (
+            <AppNotification
+              type={transactionHash ? 'SUCCESS' : 'ERROR'}
+              title={
+                transactionHash ? 'Transaction success' : 'Transaction error'
+              }
+              message={message}
+              externalLink={
+                transactionHash
+                  ? `https://testnet.nearblocks.io/txns/${transactionHash}?tab=execution`
+                  : undefined
+              }
+            />
+          ),
         });
       }
+    },
+    [fetchTokenBalance, reset, toast]
+  );
 
-      console.log({ address });
+  useEffect(() => {
+    window.addEventListener('message', handleMultiChainMessage);
 
-      setDerivedAddress(address);
-      setCopyValue(address);
-    } catch (e) {
-      console.log('Error fetching derived address ', e);
-    }
-  }, [accountId, assetType, deriveAddress, keyType.value, setCopyValue]);
+    return () => {
+      window.removeEventListener('message', handleMultiChainMessage);
+    };
+  }, [handleMultiChainMessage]);
 
   useEffect(() => {
     if (!assetType || !keyType) return;
     fetchDerivedAddress();
-    // Subscribe to changes in assetType and keyType
-    return () => {
-      // Cleanup or unsubscribe if needed
-    };
   }, [assetType, fetchDerivedAddress, keyType]);
+
+  useEffect(() => {
+    setCopyValue(derivedAddress);
+  }, [derivedAddress, setCopyValue]);
 
   const toggleAmountFocus = () => setIsAmountInputFocused(focused => !focused);
   const handleCopyClick = () => {
     onCopy();
     toast({
-      render: CopiedNotification,
+      render: () => (
+        <AppNotification type="SUCCESS" message="Address copied to clipboad" />
+      ),
     });
   };
 
@@ -191,13 +189,26 @@ const GenerateTransaction = () => {
       assetType: Asset;
       keyType: KeyType;
     }) => {
-      const { domain, asset, value } = getPayloadAndAsset(
+      if (tokenBalance === 0) {
+        toast({
+          duration: 5000,
+          isClosable: true,
+          render: () => (
+            <AppNotification
+              type="ERROR"
+              message="Add funds to the sending address to proceed."
+            />
+          ),
+        });
+        return;
+      }
+      setInFlight(true);
+      const { domain, value } = getPayloadAndAsset(
         assetType.value,
         keyType.value,
         values.amount
       );
 
-      console.log({ domain, asset, value });
       let payload: SendMultichainMessage;
 
       if (assetType.value === 0) {
@@ -222,11 +233,19 @@ const GenerateTransaction = () => {
 
       await sendTransaction(payload);
     },
-    [assetType, derivedAddress, keyType, sendTransaction]
+    [
+      assetType.chainId,
+      assetType.value,
+      derivedAddress,
+      keyType.value,
+      sendTransaction,
+      toast,
+      tokenBalance,
+    ]
   );
 
   return (
-    <Box w="fit-contet" h="fit-content" ref={ref}>
+    <Box w="full" h="fit-content" ref={ref}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <Card gap="20px">
           <PageTitle>Generate Transaction</PageTitle>
@@ -246,9 +265,12 @@ const GenerateTransaction = () => {
                   components={{ Option: KeyTypeOption } as never}
                 />
               )}
+              rules={{
+                required: true,
+              }}
             />
             <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
-              {selectedKey?.assistiveMessage}
+              {keyType.assistiveMessage}
             </FormHelperText>
             <FormErrorMessage>{errors?.keyType?.message}</FormErrorMessage>
           </FormControl>
@@ -270,33 +292,56 @@ const GenerateTransaction = () => {
                   />
                 )}
               />
-              <FormHelperText
-                {...helperTextProps}
-                color="--Sand-Light-11"
-                mt={1}
-              >
-                {selectedAsset?.networkTooltip}
-              </FormHelperText>
               <FormErrorMessage>{errors?.assetType?.message}</FormErrorMessage>
+              <Flex justify="space-between" mt={1} align="center">
+                <Skeleton
+                  height="12px"
+                  isLoaded={
+                    derivedAddress !== undefined &&
+                    !deriveAddressLoading &&
+                    !deriveAddressError
+                  }
+                  borderRadius={1}
+                >
+                  <Flex align="center" gap={1.5}>
+                    <FormHelperText
+                      {...helperTextProps}
+                      color="--Sand-Light-11"
+                    >
+                      Address:
+                    </FormHelperText>
+                    <FormHelperText
+                      {...helperTextProps}
+                      color="--Sand-Light-11"
+                      fontWeight={600}
+                      fontSize="13px"
+                    >
+                      {truncateAddressForDisplay(derivedAddress)}
+                    </FormHelperText>
+                  </Flex>
+                </Skeleton>
+                <Skeleton
+                  isLoaded={
+                    derivedAddress !== undefined &&
+                    !deriveAddressLoading &&
+                    !deriveAddressError
+                  }
+                  borderRadius="18px"
+                >
+                  <Button
+                    variant="black"
+                    size="xs"
+                    h="20px"
+                    p={undefined}
+                    fontSize="10px"
+                    py="0px"
+                    onClick={handleCopyClick}
+                  >
+                    Copy
+                  </Button>
+                </Skeleton>
+              </Flex>
             </FormControl>
-            <Tooltip label={derivedAddress} placement="top" hasArrow>
-              <IconButton
-                h="40px"
-                w="40px"
-                bg="--Sand-Light-1"
-                opacity={0.9}
-                _hover={{ bg: '--Sand-Light-1', opacity: 1 }}
-                border="1px solid"
-                borderColor="--Sand-Light-6"
-                borderRadius="50px"
-                colorScheme="blue"
-                aria-label="Copy"
-                icon={<Image src="/images/Copy.svg" />}
-                mb="2px"
-                onClick={handleCopyClick}
-                isDisabled={!derivedAddress}
-              />
-            </Tooltip>
           </Flex>
           <FormControl>
             <FormLabel {...helperTextProps} fontWeight={600}>
@@ -328,9 +373,59 @@ const GenerateTransaction = () => {
                 </NumberIncrementStepper>
               </NumberInputStepper>
             </NumberInput>
-            {/* <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
-              ... available
-            </FormHelperText> */}
+            <Flex justify="space-between" mt={1} align="center">
+              <Skeleton
+                height="12px"
+                isLoaded={
+                  tokenBalance !== undefined &&
+                  !tokenBalanceLoading &&
+                  !tokenBalanceError
+                }
+                borderRadius={1}
+              >
+                <FormHelperText
+                  {...helperTextProps}
+                  display="flex"
+                  alignItems="center"
+                  color="--Sand-Light-11"
+                  gap={1}
+                >
+                  <Tooltip
+                    fontSize="12px"
+                    label={
+                      tokenBalance && tokenBalance > 0
+                        ? 'Balance of sending address'
+                        : 'Send some funds to the derived address'
+                    }
+                    aria-label="A tooltip"
+                  >
+                    <Image src="/images/InfoCircle.svg" mb={0.3} />
+                  </Tooltip>
+                  Available: {tokenBalance}
+                </FormHelperText>
+              </Skeleton>
+              <Skeleton
+                borderRadius="18px"
+                isLoaded={
+                  tokenBalance !== undefined &&
+                  !tokenBalanceLoading &&
+                  !tokenBalanceError
+                }
+              >
+                <Button
+                  variant="black"
+                  size="xs"
+                  h="20px"
+                  p={undefined}
+                  fontSize="10px"
+                  py="0px"
+                  onClick={fetchTokenBalance}
+                >
+                  Refresh
+                </Button>
+              </Skeleton>
+            </Flex>
+
             <FormErrorMessage>{errors?.amount?.message}</FormErrorMessage>
           </FormControl>
           <FormControl>
@@ -340,7 +435,7 @@ const GenerateTransaction = () => {
             <InputGroup>
               <Input
                 {...register('address')}
-                placeholder={`${selectedAsset?.code} address`}
+                placeholder={`${assetType?.code} address`}
                 border="1px solid"
                 bg="--Sand-Light-1"
                 {...getComputedInputStyles(errors, 'address')}
@@ -348,7 +443,13 @@ const GenerateTransaction = () => {
             </InputGroup>
             <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
           </FormControl>
-          <Button w="full" variant="black" type="submit" isDisabled={!isValid}>
+          <Button
+            w="full"
+            variant="black"
+            type="submit"
+            isDisabled={!isValid}
+            isLoading={inFlight}
+          >
             Continue
           </Button>
         </Card>
