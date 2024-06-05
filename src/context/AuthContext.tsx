@@ -10,6 +10,7 @@ import React, {
 
 const networkId = (import.meta as any).env.VITE_NETWORK_ID;
 
+// Assuming you have the necessary imports for the types
 interface DerivedAddressParam {
   type: 'BTC' | 'EVM';
   signerId: string;
@@ -73,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         modules: [
           setupFastAuthWallet({
             relayerUrl,
+            walletUrl: 'http://localhost:3000',
           }),
         ],
       });
@@ -124,13 +126,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const deriveAddress = useCallback(
-    (args: DerivedAddressParam) => {
+    async (args: DerivedAddressParam) => {
       if (!fastAuthWallet) {
         console.error('FastAuth wallet not available');
         return;
       }
 
-      return fastAuthWallet.getDerivedAddress(args);
+      return await fastAuthWallet.getDerivedAddress(args);
     },
     [fastAuthWallet]
   );
