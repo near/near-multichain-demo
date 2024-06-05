@@ -21,7 +21,7 @@ const CreateAccount = () => {
 
   return (
     <Card gap="35px" pt="25px">
-      <Button w="full" onClick={handleSignIn}>
+      <Button w="full" variant="green" onClick={handleSignIn}>
         Login
       </Button>
       <Flex

@@ -49,7 +49,7 @@ const NavBar = () => {
           borderRadius="50px"
           colorScheme="blue"
           aria-label="Logout"
-          icon={<Image src="/images/SignOut.svg" />}
+          icon={<Image src="/images/SignOut.svg" maxWidth="unset" />}
           onClick={signOut}
         />
       )}

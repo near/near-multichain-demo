@@ -19,9 +19,9 @@ const keyTypes: KeyType[] = [
     assistiveMessage: 'Request for confirmation',
   },
   {
-    label: 'Wrong Domain Key',
-    value: 'wrongKey',
-    iconImage: '/images/WrongDomainKey.svg',
+    label: 'Unknown Key',
+    value: 'unknownKey',
+    iconImage: '/images/unknownKey.svg',
     assistiveMessage: 'Warning message before confirming',
   },
 ];
