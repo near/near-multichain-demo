@@ -34,7 +34,11 @@ import assets, { Asset } from '@/data/assets';
 import keyTypes, { KeyType } from '@/data/keyTypes';
 import useDerivedAddress from '@/hooks/useDerivedAddress';
 import useFetchTokenBalance from '@/hooks/useFetchTokenBalance';
-import { getPayloadAndAsset, truncateAddressForDisplay } from '@/utils/asset';
+import {
+  getPayloadAndAsset,
+  getTransactionExplorerLink,
+  truncateAddressForDisplay,
+} from '@/utils/asset';
 
 type MultiChainResponse = {
   type: string;
@@ -127,7 +131,6 @@ const GenerateTransaction = () => {
       if (e.data.type === 'multiChainRequest') setInFlight(true);
       if (e.data.type === 'multiChainResponse') {
         setInFlight(false);
-        console.log('e.data ', e.data);
         const { transactionHash, message } = e.data as MultiChainResponse;
         if (transactionHash) {
           fetchTokenBalance();
@@ -144,7 +147,7 @@ const GenerateTransaction = () => {
               message={message}
               externalLink={
                 transactionHash
-                  ? `https://testnet.nearblocks.io/txns/${transactionHash}?tab=execution`
+                  ? getTransactionExplorerLink(transactionHash, assetType.code)
                   : undefined
               }
             />
@@ -152,7 +155,7 @@ const GenerateTransaction = () => {
         });
       }
     },
-    [fetchTokenBalance, reset, toast]
+    [assetType.code, fetchTokenBalance, reset, toast]
   );
 
   useEffect(() => {
