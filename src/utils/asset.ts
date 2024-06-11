@@ -1,3 +1,5 @@
+import { chainExplorerBaseUrls } from '@/utils/constants';
+
 export function toWei(eth: number): string {
   const wei = eth * 1e18;
   return wei.toString();
@@ -64,4 +66,14 @@ export function truncateAddressForDisplay(address: string) {
   const start = address.slice(0, 5);
   const end = address.slice(-6);
   return `${start}....${end}`;
+}
+
+export function getTransactionExplorerLink(
+  transactionHash: string,
+  chainName: string
+): string {
+  if (!chainExplorerBaseUrls[chainName])
+    throw new Error('Unsupported chain name');
+
+  return `${chainExplorerBaseUrls[chainName]}/tx/${transactionHash}`;
 }
