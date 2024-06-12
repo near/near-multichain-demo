@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         network: networkId,
         modules: [
           setupFastAuthWallet({
-            relayerUrl
+            relayerUrl,
           }),
         ],
       });
