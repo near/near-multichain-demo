@@ -98,6 +98,7 @@ const GenerateTransaction = () => {
     formState: { errors = {}, isValid },
     control,
     watch,
+    getValues,
     reset,
   } = useForm<FormValues>({
     mode: 'onSubmit',
@@ -132,10 +133,6 @@ const GenerateTransaction = () => {
       if (e.data.type === 'multiChainResponse') {
         setInFlight(false);
         const { transactionHash, message } = e.data as MultiChainResponse;
-        if (transactionHash) {
-          fetchTokenBalance();
-          reset();
-        }
         toast({
           duration: 10000,
           render: () => (
@@ -153,6 +150,10 @@ const GenerateTransaction = () => {
             />
           ),
         });
+        if (transactionHash) {
+          fetchTokenBalance();
+          reset();
+        }
       }
     },
     [assetType.code, fetchTokenBalance, reset, toast]
