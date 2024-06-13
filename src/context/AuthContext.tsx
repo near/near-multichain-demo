@@ -13,9 +13,7 @@ const networkId = (import.meta as any).env.VITE_NETWORK_ID;
 // Assuming you have the necessary imports for the types
 interface DerivedAddressParam {
   type: 'BTC' | 'EVM';
-  signerId: string;
   path: string;
-  networkId: 'testnet' | 'mainnet';
   btcNetworkId?: 'testnet' | 'mainnet';
   contract: 'v2.multichain-mpc.testnet';
 }

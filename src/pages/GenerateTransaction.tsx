@@ -98,7 +98,6 @@ const GenerateTransaction = () => {
     formState: { errors = {}, isValid },
     control,
     watch,
-    getValues,
     reset,
   } = useForm<FormValues>({
     mode: 'onSubmit',

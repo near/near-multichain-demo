@@ -29,18 +29,14 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
       if (assetType.value === 0) {
         address = await deriveAddress({
           type: 'BTC',
-          signerId: accountId,
           path: derivationPath,
           btcNetworkId: 'testnet',
-          networkId: 'testnet',
           contract: 'v2.multichain-mpc.testnet',
         });
       } else if (assetType.value === 60) {
         address = await deriveAddress({
           type: 'EVM',
-          signerId: accountId,
           path: derivationPath,
-          networkId: 'testnet',
           contract: 'v2.multichain-mpc.testnet',
         });
       }
