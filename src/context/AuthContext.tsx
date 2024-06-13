@@ -141,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      return fastAuthWallet.signMultiChainTransaction(data);
+      return fastAuthWallet.signAndSendMultiChainTransaction(data);
     },
     [fastAuthWallet]
   );

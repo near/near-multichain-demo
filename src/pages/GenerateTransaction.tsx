@@ -192,19 +192,19 @@ const GenerateTransaction = () => {
       assetType: Asset;
       keyType: KeyType;
     }) => {
-      if (tokenBalance === 0) {
-        toast({
-          duration: 5000,
-          isClosable: true,
-          render: () => (
-            <AppNotification
-              type="ERROR"
-              message="Add funds to the sending address to proceed."
-            />
-          ),
-        });
-        return;
-      }
+      // if (tokenBalance === 0) {
+      //   toast({
+      //     duration: 5000,
+      //     isClosable: true,
+      //     render: () => (
+      //       <AppNotification
+      //         type="ERROR"
+      //         message="Add funds to the sending address to proceed."
+      //       />
+      //     ),
+      //   });
+      //   return;
+      // }
       setInFlight(true);
       const { domain, value } = getPayloadAndAsset(
         assetType.value,
@@ -233,6 +233,8 @@ const GenerateTransaction = () => {
           chainId: assetType.chainId as bigint,
         };
       }
+
+      console.log(payload);
 
       await sendTransaction(payload);
     },
