@@ -98,7 +98,6 @@ const GenerateTransaction = () => {
     formState: { errors = {}, isValid },
     control,
     watch,
-    getValues,
     reset,
   } = useForm<FormValues>({
     mode: 'onSubmit',
@@ -111,6 +110,7 @@ const GenerateTransaction = () => {
     // @ts-expect-error: There's currently a typing issue with the resolver library
     resolver: yupResolver(schema),
   });
+
   const assetType = watch('assetType');
   const keyType = watch('keyType');
 
@@ -168,13 +168,26 @@ const GenerateTransaction = () => {
   }, [handleMultiChainMessage]);
 
   useEffect(() => {
-    if (!assetType || !keyType) return;
-    fetchDerivedAddress();
+    if (assetType && keyType) fetchDerivedAddress();
   }, [assetType, fetchDerivedAddress, keyType]);
 
   useEffect(() => {
     setCopyValue(derivedAddress);
   }, [derivedAddress, setCopyValue]);
+
+  useEffect(() => {
+    if (!tokenBalanceLoading && tokenBalance === 0) {
+      toast({
+        duration: 10000,
+        render: () => (
+          <AppNotification
+            type="WARNING"
+            message="Add funds to the sending address"
+          />
+        ),
+      });
+    }
+  }, [toast, tokenBalance, tokenBalanceLoading]);
 
   const toggleAmountFocus = () => setIsAmountInputFocused(focused => !focused);
   const handleCopyClick = () => {
@@ -193,19 +206,6 @@ const GenerateTransaction = () => {
       assetType: Asset;
       keyType: KeyType;
     }) => {
-      if (tokenBalance === 0) {
-        toast({
-          duration: 5000,
-          isClosable: true,
-          render: () => (
-            <AppNotification
-              type="ERROR"
-              message="Add funds to the sending address to proceed."
-            />
-          ),
-        });
-        return;
-      }
       setInFlight(true);
       const { domain, value } = getPayloadAndAsset(
         assetType.value,
@@ -220,7 +220,7 @@ const GenerateTransaction = () => {
           chain: assetType.value,
           ...(domain ? { domain } : {}),
           to: values.address,
-          value: BigInt(value),
+          value: value as unknown as bigint,
           from: derivedAddress,
           network: assetType.chainId === 'testnet' ? 'testnet' : 'mainnet',
         };
@@ -229,7 +229,7 @@ const GenerateTransaction = () => {
           chain: assetType.value,
           ...(domain ? { domain } : {}),
           to: values.address,
-          value: BigInt(value),
+          value: value as unknown as bigint,
           from: derivedAddress,
           chainId: assetType.chainId as bigint,
         };
@@ -243,8 +243,6 @@ const GenerateTransaction = () => {
       derivedAddress,
       keyType.value,
       sendTransaction,
-      toast,
-      tokenBalance,
     ]
   );
 
@@ -273,9 +271,6 @@ const GenerateTransaction = () => {
                 required: true,
               }}
             />
-            <FormHelperText {...helperTextProps} color="--Sand-Light-11" mt={1}>
-              {keyType.assistiveMessage}
-            </FormHelperText>
             <FormErrorMessage>{errors?.keyType?.message}</FormErrorMessage>
           </FormControl>
           <Flex w="full" align="center" gap={3}>
@@ -405,7 +400,7 @@ const GenerateTransaction = () => {
                   >
                     <Image src="/images/InfoCircle.svg" mb={0.3} />
                   </Tooltip>
-                  Available: {tokenBalance}
+                  Available: {tokenBalance ?? 0}
                 </FormHelperText>
               </Skeleton>
               <Skeleton
