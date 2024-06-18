@@ -1,15 +1,14 @@
 import { Chain, CovalentClient } from '@covalenthq/client-sdk';
 import { validate as isValidBtcAddress } from 'bitcoin-address-validation';
 import { useState, useEffect, useCallback } from 'react';
-
 import { fromSatoshis, fromWei } from '@/utils/asset';
 
 const COVALENT_API_KEY = (import.meta as any).env.VITE_COVALENT_API_KEY;
 
 export function isValidEvmAddress(address: string): boolean {
-  // EVM-compatible address validation (Ethereum, BSC, etc.)
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
+
 async function fetchBtcTestnetBalance(address: string): Promise<number> {
   const response = await fetch(
     `https://api.blockcypher.com/v1/btc/test3/addrs/${address}/balance`
@@ -17,13 +16,12 @@ async function fetchBtcTestnetBalance(address: string): Promise<number> {
   if (!response.ok) {
     throw new Error(`Failed to fetch balance: ${response.statusText}`);
   }
-  const data = await response.json();
+  const { balance } = await response.json();
 
-  if (!Number.isInteger(data.balance)) {
+  if (balance === null || typeof balance === 'undefined') {
     throw new Error(`Balance not available`);
   }
-  // type: BlockCypherBalanceResponse
-  return fromSatoshis(data.balance);
+  return fromSatoshis(balance);
 }
 
 async function fetchCovalentBalance(
@@ -41,8 +39,10 @@ async function fetchCovalentBalance(
   }
 
   const { balance } = response.data.items[0];
-  if (balance === null) return 0;
-  // type: Response<BalancesResponse>
+
+  if (balance === null || typeof balance === 'undefined') {
+    throw new Error(`Balance not available`);
+  }
   return chain.includes('btc')
     ? fromSatoshis(BigInt(balance).toString())
     : fromWei(BigInt(balance).toString());
@@ -53,14 +53,17 @@ const useFetchTokenBalance = (address: string, chain: string) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const validateAddress = (address: string, chain: string): boolean => {
-    if (chain === 'btc-testnet' || chain.includes('btc')) {
-      return isValidBtcAddress(address);
-    } else if (chain.includes('eth') || chain.includes('bsc')) {
-      return isValidEvmAddress(address);
-    }
-    return false; // Add other chains as needed
-  };
+  const validateAddress = useCallback(
+    (address: string, chain: string): boolean => {
+      if (chain === 'btc-testnet' || chain.includes('btc')) {
+        return isValidBtcAddress(address);
+      } else if (chain.includes('eth') || chain.includes('bsc')) {
+        return isValidEvmAddress(address);
+      }
+      return false;
+    },
+    []
+  );
 
   const fetchTokenBalance = useCallback(async () => {
     setLoading(true);
@@ -73,10 +76,10 @@ const useFetchTokenBalance = (address: string, chain: string) => {
         fetchedBalance = await fetchCovalentBalance(address, chain as Chain);
       }
       setBalance(fetchedBalance);
-      setError(null);
     } catch (error: any) {
       console.error('Error fetching balance:', error);
       setError(error.message || 'Failed to fetch balance');
+      setBalance(null);
     } finally {
       setLoading(false);
     }
@@ -84,10 +87,12 @@ const useFetchTokenBalance = (address: string, chain: string) => {
 
   useEffect(() => {
     if (!validateAddress(address, chain)) {
+      setError('Invalid address');
+      setLoading(false);
       return;
     }
     fetchTokenBalance();
-  }, [address, fetchTokenBalance, chain]);
+  }, [address, chain, validateAddress, fetchTokenBalance]);
 
   return { balance, loading, error, refetch: fetchTokenBalance };
 };
