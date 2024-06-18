@@ -11,12 +11,21 @@ import React, {
 const networkId = (import.meta as any).env.VITE_NETWORK_ID;
 
 // Assuming you have the necessary imports for the types
-interface DerivedAddressParam {
-  type: 'BTC' | 'EVM';
+interface BaseDerivedAddressParam {
   path: string;
-  btcNetworkId?: 'testnet' | 'mainnet';
   contract: 'v2.multichain-mpc.testnet';
 }
+
+interface BTCDerivedAddressParam extends BaseDerivedAddressParam {
+  type: 'BTC';
+  btcNetworkId: 'testnet' | 'mainnet';
+}
+
+interface EVMDerivedAddressParam extends BaseDerivedAddressParam {
+  type: 'EVM';
+}
+
+type DerivedAddressParam = BTCDerivedAddressParam | EVMDerivedAddressParam;
 
 interface BaseSendMultichainMessage {
   chain: number;
