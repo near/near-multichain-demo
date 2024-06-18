@@ -11,14 +11,21 @@ import React, {
 const networkId = (import.meta as any).env.VITE_NETWORK_ID;
 
 // Assuming you have the necessary imports for the types
-interface DerivedAddressParam {
-  type: 'BTC' | 'EVM';
-  signerId: string;
+interface BaseDerivedAddressParam {
   path: string;
-  networkId: 'testnet' | 'mainnet';
-  btcNetworkId?: 'testnet' | 'mainnet';
   contract: 'v2.multichain-mpc.testnet';
 }
+
+interface BTCDerivedAddressParam extends BaseDerivedAddressParam {
+  type: 'BTC';
+  btcNetworkId: 'testnet' | 'mainnet';
+}
+
+interface EVMDerivedAddressParam extends BaseDerivedAddressParam {
+  type: 'EVM';
+}
+
+type DerivedAddressParam = BTCDerivedAddressParam | EVMDerivedAddressParam;
 
 interface BaseSendMultichainMessage {
   chain: number;
@@ -143,7 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      return fastAuthWallet.signMultiChainTransaction(data);
+      return fastAuthWallet.signAndSendMultiChainTransaction(data);
     },
     [fastAuthWallet]
   );
