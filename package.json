@@ -20,7 +20,6 @@
     "bitcoin-address-validation": "^2.2.3",
     "borsher": "^2.2.1",
     "buffer": "^6.0.3",
-    "canonicalize": "^2.0.0",
     "chakra-react-select": "^4.7.6",
     "events": "^3.3.0",
     "framer-motion": "^11.0.3",
