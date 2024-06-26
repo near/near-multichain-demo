@@ -25,7 +25,6 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
 
       if (assetType.value === 0) {
         address = await fastAuthWallet.getDerivedAddress({
-          type: 'BTC',
           signerId: accountId,
           path: {
             chain: 0,
@@ -37,7 +36,6 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
         });
       } else if (assetType.value === 60) {
         address = await fastAuthWallet?.getDerivedAddress({
-          type: 'EVM',
           signerId: accountId,
           path: {
             chain: 60,
