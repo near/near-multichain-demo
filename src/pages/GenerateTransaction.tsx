@@ -29,7 +29,7 @@ import { AppNotification } from '@/components/notifications';
 import PageTitle from '@/components/PageTitle';
 import PlusCircle from '@/components/PlusCircle';
 import { Select, KeyTypeOption, AssetOption } from '@/components/select';
-import { SendMultichainMessage, useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import assets, { Asset } from '@/data/assets';
 import keyTypes, { KeyType } from '@/data/keyTypes';
 import useDerivedAddress from '@/hooks/useDerivedAddress';
@@ -86,8 +86,8 @@ const schema = yup.object().shape({
 });
 
 const GenerateTransaction = () => {
+  const { fastAuthWallet } = useAuth();
   const [isAmountInputFocused, setIsAmountInputFocused] = useState(false);
-  const { sendTransaction } = useAuth();
   const [inFlight, setInFlight] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const { onCopy, setValue: setCopyValue } = useClipboard('');
@@ -206,6 +206,11 @@ const GenerateTransaction = () => {
       assetType: Asset;
       keyType: KeyType;
     }) => {
+      if (!fastAuthWallet) {
+        console.error('FastAuth wallet not available');
+        return;
+      }
+
       setInFlight(true);
       const { domain, value } = getPayloadAndAsset(
         assetType.value,
@@ -213,37 +218,35 @@ const GenerateTransaction = () => {
         values.amount
       );
 
-      let payload: SendMultichainMessage;
-
       if (assetType.value === 0) {
-        payload = {
-          chain: assetType.value,
-          ...(domain ? { domain } : {}),
-          to: values.address,
-          value: value as unknown as bigint,
-          from: derivedAddress,
-          network: assetType.chainId === 'testnet' ? 'testnet' : 'mainnet',
-        };
-      } else {
-        payload = {
-          chain: assetType.value,
-          ...(domain ? { domain } : {}),
-          to: values.address,
-          value: value as unknown as bigint,
-          from: derivedAddress,
-          chainId: assetType.chainId as bigint,
-        };
+        fastAuthWallet.signMultiChainTransaction({
+          derivationPath: {
+            chain: assetType.value,
+            ...(domain ? { domain } : {}),
+          },
+          transaction: {
+            to: values.address,
+            value,
+          },
+          chainConfig: {
+            network: assetType.chainId === 'testnet' ? 'testnet' : 'mainnet',
+          },
+        });
+      } else if (assetType.value === 60) {
+        fastAuthWallet.signMultiChainTransaction({
+          derivationPath: {
+            chain: assetType.value,
+            ...(domain ? { domain } : {}),
+          },
+          transaction: {
+            to: values.address,
+            value: value,
+            chainId: assetType.chainId,
+          },
+        });
       }
-
-      await sendTransaction(payload);
     },
-    [
-      assetType.chainId,
-      assetType.value,
-      derivedAddress,
-      keyType.value,
-      sendTransaction,
-    ]
+    [assetType.chainId, assetType.value, fastAuthWallet, keyType.value]
   );
 
   return (

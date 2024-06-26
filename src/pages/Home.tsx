@@ -6,12 +6,20 @@ import Card from '@/components/Card';
 import { useAuth } from '@/context/AuthContext';
 
 const CreateAccount = () => {
-  const { requestAuthentication, signedIn } = useAuth();
+  const { fastAuthWallet, signedIn } = useAuth();
   const navigate = useNavigate();
 
-  const handleSignIn = () => requestAuthentication();
+  const handleSignIn = () =>
+    fastAuthWallet?.signIn({
+      contractId: 'near-social',
+      isRecovery: true,
+    });
 
-  const handleCreateAccount = () => requestAuthentication(true);
+  const handleCreateAccount = () =>
+    fastAuthWallet?.signIn({
+      contractId: 'near-social',
+      isRecovery: false,
+    });
 
   useEffect(() => {
     if (signedIn) {
