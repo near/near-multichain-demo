@@ -28,7 +28,7 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
           signerId: accountId,
           path: {
             chain: 0,
-            domain,
+            ...(domain ? { domain } : {}),
           },
           btcNetworkId: 'testnet',
           nearNetworkId: 'testnet',
@@ -39,7 +39,7 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
           signerId: accountId,
           path: {
             chain: 60,
-            domain,
+            ...(domain ? { domain } : {}),
           },
           nearNetworkId: 'testnet',
           multichainContractId: 'v2.multichain-mpc.testnet',
