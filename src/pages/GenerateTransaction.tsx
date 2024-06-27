@@ -229,7 +229,7 @@ const GenerateTransaction = () => {
             value,
           },
           chainConfig: {
-            network: assetType.chainId === 'testnet' ? 'testnet' : 'mainnet',
+            network: 'testnet',
           },
         });
       } else if (assetType.value === 60) {
