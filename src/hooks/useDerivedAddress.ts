@@ -32,7 +32,7 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
           },
           btcNetworkId: 'testnet',
           nearNetworkId: 'testnet',
-          multichainContractId: 'v2.multichain-mpc.testnet',
+          multichainContractId: 'v1.signer-prod.testnet',
         });
       } else if (assetType.value === 60) {
         address = await fastAuthWallet?.getDerivedAddress({
@@ -42,7 +42,7 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
             ...(domain ? { domain } : {}),
           },
           nearNetworkId: 'testnet',
-          multichainContractId: 'v2.multichain-mpc.testnet',
+          multichainContractId: 'v1.signer-prod.testnet',
         });
       }
 

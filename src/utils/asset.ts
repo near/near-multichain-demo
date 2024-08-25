@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { chainExplorerBaseUrls } from '@/utils/constants';
 
 export function toWei(eth: number): string {
@@ -76,4 +77,22 @@ export function getTransactionExplorerLink(
     throw new Error('Unsupported chain name');
 
   return `${chainExplorerBaseUrls[chainName]}/tx/${transactionHash}`;
+}
+
+export function callContractWithDataField(
+  functionSignature: string,
+  params: any[]
+): string | null {
+  try {
+    const iface = new ethers.Interface([`function ${functionSignature}`]);
+    const functionName = functionSignature.split('(')[0];
+    const data = iface.encodeFunctionData(functionName, params);
+    return data;
+  } catch (error) {
+    console.error(
+      `Error encoding function call for ${functionSignature}:`,
+      error
+    );
+    return null;
+  }
 }

@@ -17,6 +17,7 @@ import {
   useToast,
   Tooltip,
   Skeleton,
+  Switch,
 } from '@chakra-ui/react';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -38,6 +39,7 @@ import {
   getPayloadAndAsset,
   getTransactionExplorerLink,
   truncateAddressForDisplay,
+  callContractWithDataField,
 } from '@/utils/asset';
 
 type MultiChainResponse = {
@@ -76,6 +78,7 @@ type FormValues = {
   amount: number;
   assetType: Asset;
   keyType: KeyType;
+  isFunctionCall: boolean;
 };
 
 const schema = yup.object().shape({
@@ -83,6 +86,7 @@ const schema = yup.object().shape({
   assetType: yup.object<Asset>().required('This is required'),
   address: yup.string().required('This is required'),
   amount: yup.number().required('This is required'),
+  isFunctionCall: yup.boolean(),
 });
 
 const GenerateTransaction = () => {
@@ -106,6 +110,7 @@ const GenerateTransaction = () => {
       assetType: assets[0],
       amount: 0.01,
       address: '',
+      isFunctionCall: false,
     },
     // @ts-expect-error: There's currently a typing issue with the resolver library
     resolver: yupResolver(schema),
@@ -113,6 +118,7 @@ const GenerateTransaction = () => {
 
   const assetType = watch('assetType');
   const keyType = watch('keyType');
+  const isFunctionCall = watch('isFunctionCall');
 
   const {
     fetchDerivedAddress,
@@ -205,6 +211,7 @@ const GenerateTransaction = () => {
       amount: number;
       assetType: Asset;
       keyType: KeyType;
+      isFunctionCall: boolean;
     }) => {
       if (!fastAuthWallet) {
         console.error('FastAuth wallet not available');
@@ -233,21 +240,50 @@ const GenerateTransaction = () => {
           },
         });
       } else if (assetType.value === 60) {
-        fastAuthWallet.signMultiChainTransaction({
-          derivationPath: {
-            chain: assetType.value,
-            ...(domain ? { domain } : {}),
-          },
-          transaction: {
-            to: values.address,
-            value: value,
-            chainId: assetType.chainId,
-          },
-        });
+        if (values.isFunctionCall) {
+          // Hardcoded to simplify the UI
+          const functionCallData = callContractWithDataField(
+            'mint(address,uint256)',
+            [derivedAddress, '10']
+          );
+          fastAuthWallet.signMultiChainTransaction({
+            derivationPath: {
+              chain: assetType.value,
+              ...(domain ? { domain } : {}),
+            },
+            transaction: {
+              // Hardcoded to simplify the UI
+              to: '0xF3F795f8Bde4421ff3e8D18964a39B64fA685690',
+              data: functionCallData,
+              value: 0,
+              chainId: assetType.chainId,
+            },
+          });
+        } else {
+          fastAuthWallet.signMultiChainTransaction({
+            derivationPath: {
+              chain: assetType.value,
+              ...(domain ? { domain } : {}),
+            },
+            transaction: {
+              to: values.address,
+              value: value,
+              chainId: assetType.chainId,
+            },
+          });
+        }
       }
     },
-    [assetType.chainId, assetType.value, fastAuthWallet, keyType.value]
+    [
+      assetType.chainId,
+      assetType.value,
+      derivedAddress,
+      fastAuthWallet,
+      keyType.value,
+    ]
   );
+
+  const isSepolia = assetType.chainId === BigInt('11155111');
 
   return (
     <Box w="full" h="fit-content" ref={ref}>
@@ -430,21 +466,32 @@ const GenerateTransaction = () => {
 
             <FormErrorMessage>{errors?.amount?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl>
-            <FormLabel {...helperTextProps} fontWeight={600}>
-              Send To
-            </FormLabel>
-            <InputGroup>
-              <Input
-                {...register('address')}
-                placeholder={`${assetType?.code} address`}
-                border="1px solid"
-                bg="--Sand-Light-1"
-                {...getComputedInputStyles(errors, 'address')}
-              />
-            </InputGroup>
-            <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
-          </FormControl>
+          {!isSepolia ||
+            (isSepolia && !isFunctionCall && (
+              <FormControl>
+                <FormLabel {...helperTextProps} fontWeight={600}>
+                  Send To
+                </FormLabel>
+                <InputGroup>
+                  <Input
+                    {...register('address')}
+                    placeholder={`${assetType?.code} address`}
+                    border="1px solid"
+                    bg="--Sand-Light-1"
+                    {...getComputedInputStyles(errors, 'address')}
+                  />
+                </InputGroup>
+                <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
+              </FormControl>
+            ))}
+          {isSepolia && (
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="is-function-call" mb="0">
+                Function Call
+              </FormLabel>
+              <Switch id="is-function-call" {...register('isFunctionCall')} />
+            </FormControl>
+          )}
           <Button
             w="full"
             variant="black"
@@ -452,7 +499,7 @@ const GenerateTransaction = () => {
             isDisabled={!isValid}
             isLoading={inFlight}
           >
-            Continue
+            {isFunctionCall ? 'Mint Tokens' : 'Continue'}
           </Button>
         </Card>
       </form>
