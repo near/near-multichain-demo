@@ -84,7 +84,7 @@ type FormValues = {
 const schema = yup.object().shape({
   keyType: yup.object<KeyType>().required('This is required'),
   assetType: yup.object<Asset>().required('This is required'),
-  address: yup.string().required('This is required'),
+  address: yup.string(),
   amount: yup.number().required('This is required'),
   isFunctionCall: yup.boolean(),
 });
@@ -104,7 +104,7 @@ const GenerateTransaction = () => {
     watch,
     reset,
   } = useForm<FormValues>({
-    mode: 'onSubmit',
+    mode: 'all',
     defaultValues: {
       keyType: keyTypes[0],
       assetType: assets[0],
