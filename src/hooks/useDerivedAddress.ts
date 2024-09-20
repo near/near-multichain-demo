@@ -1,4 +1,3 @@
-import canonicalize from 'canonicalize';
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Asset } from '@/data/assets';
@@ -6,7 +5,7 @@ import { KeyType } from '@/data/keyTypes';
 import { getDomain } from '@/utils/asset';
 
 const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
-  const { deriveAddress, accountId } = useAuth();
+  const { fastAuthWallet } = useAuth();
   const [derivedAddress, setDerivedAddress] = useState('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,33 +14,35 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
     setLoading(true);
     try {
       const domain = getDomain(keyType.value);
-      const derivationPath = canonicalize(
-        domain ? { chain: assetType.value, domain } : { chain: assetType.value }
-      );
+      const accountId =
+        (await fastAuthWallet?.getAccounts())?.[0]?.accountId || '';
 
-      if (!derivationPath || !accountId) {
-        console.error('Error: Missing derivation path for address generation.');
-        return;
+      if (!assetType.value.toString() || !accountId || !fastAuthWallet) {
+        throw new Error('Invalid asset type or account ID');
       }
 
       let address = '';
 
       if (assetType.value === 0) {
-        address = await deriveAddress({
-          type: 'BTC',
+        address = await fastAuthWallet.getDerivedAddress({
           signerId: accountId,
-          path: derivationPath,
+          path: {
+            chain: 0,
+            ...(domain ? { domain } : {}),
+          },
           btcNetworkId: 'testnet',
-          networkId: 'testnet',
-          contract: 'v2.multichain-mpc.testnet',
+          nearNetworkId: 'testnet',
+          multichainContractId: 'v1.signer-prod.testnet',
         });
       } else if (assetType.value === 60) {
-        address = await deriveAddress({
-          type: 'EVM',
+        address = await fastAuthWallet?.getDerivedAddress({
           signerId: accountId,
-          path: derivationPath,
-          networkId: 'testnet',
-          contract: 'v2.multichain-mpc.testnet',
+          path: {
+            chain: 60,
+            ...(domain ? { domain } : {}),
+          },
+          nearNetworkId: 'testnet',
+          multichainContractId: 'v1.signer-prod.testnet',
         });
       }
 
@@ -52,7 +53,7 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
     } finally {
       setLoading(false);
     }
-  }, [accountId, assetType, deriveAddress, keyType.value]);
+  }, [assetType.value, fastAuthWallet, keyType.value]);
 
   useEffect(() => {
     if (assetType && keyType) fetchDerivedAddress();
