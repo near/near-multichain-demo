@@ -10,6 +10,11 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const chainSignaturesContract = process.env.VITE_CHAIN_SIGNATURES_CONTRACT;
+  if (!chainSignaturesContract) {
+    throw new Error('Chain signatures contract not set');
+  }
+
   const fetchDerivedAddress = useCallback(async () => {
     setLoading(true);
     try {
@@ -32,7 +37,7 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
           },
           btcNetworkId: 'testnet',
           nearNetworkId: 'testnet',
-          multichainContractId: 'v1.signer-prod.testnet',
+          multichainContractId: chainSignaturesContract,
         });
       } else if (assetType.value === 60) {
         address = await fastAuthWallet?.getDerivedAddress({
@@ -42,7 +47,7 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
             ...(domain ? { domain } : {}),
           },
           nearNetworkId: 'testnet',
-          multichainContractId: 'v1.signer-prod.testnet',
+          multichainContractId: chainSignaturesContract,
         });
       }
 
@@ -53,7 +58,7 @@ const useDerivedAddress = (assetType: Asset, keyType: KeyType) => {
     } finally {
       setLoading(false);
     }
-  }, [assetType.value, fastAuthWallet, keyType.value]);
+  }, [assetType.value, chainSignaturesContract, fastAuthWallet, keyType.value]);
 
   useEffect(() => {
     if (assetType && keyType) fetchDerivedAddress();
