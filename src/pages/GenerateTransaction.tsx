@@ -466,24 +466,23 @@ const GenerateTransaction = () => {
 
             <FormErrorMessage>{errors?.amount?.message}</FormErrorMessage>
           </FormControl>
-          {!isSepolia ||
-            (isSepolia && !isFunctionCall && (
-              <FormControl>
-                <FormLabel {...helperTextProps} fontWeight={600}>
-                  Send To
-                </FormLabel>
-                <InputGroup>
-                  <Input
-                    {...register('address')}
-                    placeholder={`${assetType?.code} address`}
-                    border="1px solid"
-                    bg="--Sand-Light-1"
-                    {...getComputedInputStyles(errors, 'address')}
-                  />
-                </InputGroup>
-                <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
-              </FormControl>
-            ))}
+          {(!isSepolia || (isSepolia && !isFunctionCall)) && (
+            <FormControl>
+              <FormLabel {...helperTextProps} fontWeight={600}>
+                Send To
+              </FormLabel>
+              <InputGroup>
+                <Input
+                  {...register('address')}
+                  placeholder={`${assetType?.code} address`}
+                  border="1px solid"
+                  bg="--Sand-Light-1"
+                  {...getComputedInputStyles(errors, 'address')}
+                />
+              </InputGroup>
+              <FormErrorMessage>{errors?.address?.message}</FormErrorMessage>
+            </FormControl>
+          )}
           {isSepolia && (
             <FormControl display="flex" alignItems="center">
               <FormLabel htmlFor="is-function-call" mb="0">
