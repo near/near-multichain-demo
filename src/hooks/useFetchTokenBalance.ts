@@ -9,19 +9,21 @@ export function isValidEvmAddress(address: string): boolean {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
-async function fetchBtcTestnetBalance(address: string): Promise<number> {
-  const response = await fetch(
-    `https://api.blockcypher.com/v1/btc/test3/addrs/${address}/balance`
-  );
-  if (!response.ok) {
-    throw new Error(`Failed to fetch balance: ${response.statusText}`);
+export async function fetchBtcTestnetBalance(address: string): Promise<number> {
+  try {
+    const response = await fetch(
+      `https://blockstream.info/testnet/api/address/${address}/utxo`
+    );
+    const utxos = await response.json();
+    const totalSatoshis = utxos.reduce(
+      (acc: number, utxo: any) => acc + utxo.value,
+      0
+    );
+    return totalSatoshis / 100000000; // Convert satoshis to BTC and format to 8 decimal places
+  } catch (error) {
+    console.error('Error fetching BTC balance:', error);
+    return 0;
   }
-  const { balance } = await response.json();
-
-  if (balance === null || typeof balance === 'undefined') {
-    throw new Error(`Balance not available`);
-  }
-  return fromSatoshis(balance);
 }
 
 async function fetchCovalentBalance(
